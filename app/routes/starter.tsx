@@ -6,7 +6,7 @@ import BackgroundRays from '~/components/ui/BackgroundRays';
 import { LoadingOverlay } from '~/components/ui/LoadingOverlay';
 import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => oasisMeta('Start a blank app | OasisOS');
+export const meta: MetaFunction = (args) => oasisMeta('Start a blank app | OasisOS', args);
 
 export default function Starter() {
   return (

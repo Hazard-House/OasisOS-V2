@@ -6,7 +6,7 @@ import { Header } from '~/components/header/Header';
 import BackgroundRays from '~/components/ui/BackgroundRays';
 import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => oasisMeta();
+export const meta: MetaFunction = (args) => oasisMeta('OasisOS', args);
 
 export async function loader(args: LoaderFunctionArgs) {
   return Response.json({ url: args.params.url });

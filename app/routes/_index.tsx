@@ -7,7 +7,7 @@ import { FirstRunOnboarding } from '~/components/onboarding/FirstRunOnboarding';
 import BackgroundRays from '~/components/ui/BackgroundRays';
 import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => oasisMeta();
+export const meta: MetaFunction = (args) => oasisMeta('OasisOS', args);
 
 export const loader = () => Response.json({});
 

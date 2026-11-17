@@ -4,7 +4,16 @@ import xtermStyles from '@xterm/xterm/css/xterm.css?url';
 import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction, type MetaFunction } from 'react-router';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from 'react-router';
 import { cssTransition, ToastContainer } from 'react-toastify';
 
 import reactToastifyStyles from 'react-toastify/dist/ReactToastify.css?url';
@@ -17,7 +26,11 @@ const toastAnimation = cssTransition({
   exit: 'animated fadeOutRight',
 });
 
-export const meta: MetaFunction = () => oasisMeta();
+export const loader = ({ request }: LoaderFunctionArgs) => {
+  return { origin: new URL(request.url).origin };
+};
+
+export const meta: MetaFunction<typeof loader> = (args) => oasisMeta('OasisOS', args);
 
 export const links: LinksFunction = () => [
   {
