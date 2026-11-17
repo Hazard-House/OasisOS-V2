@@ -54,6 +54,7 @@ export const shortcutsStore = map<Shortcuts>({
 const PROVIDER_SETTINGS_KEY = 'provider_settings';
 const AUTO_ENABLED_KEY = 'auto_enabled_providers';
 const USER_DISABLED_KEY = 'provider_user_disabled';
+const USER_DISABLED_MIGRATED_KEY = 'provider_user_disabled_migrated';
 
 // Add this helper function at the top of the file
 const isBrowser = typeof window !== 'undefined';
@@ -130,7 +131,7 @@ const autoEnableConfiguredProviders = async () => {
   try {
     const configuredProviders = await fetchConfiguredProviders();
     const currentSettings = providersStore.get();
-    const userDisabled = readUserDisabledProviders();
+    const userDisabled = migratePriorOptOuts();
     const newlyAutoEnabled: string[] = [];
 
     let hasChanges = false;
@@ -256,6 +257,41 @@ function readNameList(key: string): string[] {
 
 function readUserDisabledProviders() {
   return readNameList(USER_DISABLED_KEY);
+}
+
+function migratePriorOptOuts() {
+  const existing = readUserDisabledProviders();
+
+  if (!isBrowser || localStorage.getItem(USER_DISABLED_MIGRATED_KEY) === '1') {
+    return existing;
+  }
+
+  const migrated = new Set(existing);
+  const autoEnabledKeyPresent = localStorage.getItem(AUTO_ENABLED_KEY) !== null;
+
+  if (autoEnabledKeyPresent) {
+    const autoEnabled = readNameList(AUTO_ENABLED_KEY);
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(PROVIDER_SETTINGS_KEY) || '{}') as ProviderSetting;
+
+      for (const name of LOCAL_PROVIDERS) {
+        const enabled = saved?.[name]?.settings?.enabled;
+
+        if (enabled === false && !autoEnabled.includes(name)) {
+          migrated.add(name);
+        }
+      }
+    } catch {
+      // Keep the current list when the saved settings cannot be read.
+    }
+  }
+
+  const next = [...migrated];
+  localStorage.setItem(USER_DISABLED_KEY, JSON.stringify(next));
+  localStorage.setItem(USER_DISABLED_MIGRATED_KEY, '1');
+
+  return next;
 }
 
 export const isDebugMode = atom(false);

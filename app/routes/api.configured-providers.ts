@@ -17,13 +17,17 @@ function isRealSecret(value: unknown) {
 }
 
 function isRealBaseUrl(value: unknown) {
-  return (
-    typeof value === 'string' &&
-    value.trim().length > 0 &&
-    value.startsWith('http') &&
-    !value.includes('your_') &&
-    !value.includes('_here')
-  );
+  if (typeof value !== 'string' || value.includes('your_') || value.includes('_here')) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value.trim());
+
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -39,15 +43,18 @@ export const loader: LoaderFunction = async ({ context }) => {
     for (const providerInstance of llmManager.getAllProviders()) {
       const config = providerInstance.config;
 
-      let isConfigured = false;
+      const baseUrlValue = config.baseUrlKey
+        ? readServerValue(serverEnv, llmManager.env, config.baseUrlKey)
+        : undefined;
+      const apiTokenValue = config.apiTokenKey
+        ? readServerValue(serverEnv, llmManager.env, config.apiTokenKey)
+        : undefined;
 
-      if (config.baseUrlKey && isRealBaseUrl(readServerValue(serverEnv, llmManager.env, config.baseUrlKey))) {
-        isConfigured = true;
-      }
+      const hasBaseUrl =
+        !config.baseUrlKey || isRealBaseUrl(baseUrlValue) || Boolean(config.baseUrl && config.apiTokenKey);
 
-      if (config.apiTokenKey && isRealSecret(readServerValue(serverEnv, llmManager.env, config.apiTokenKey))) {
-        isConfigured = true;
-      }
+      const hasApiToken = !config.apiTokenKey || isRealSecret(apiTokenValue);
+      const isConfigured = hasBaseUrl && hasApiToken;
 
       configuredProviders.push({
         name: providerInstance.name,
