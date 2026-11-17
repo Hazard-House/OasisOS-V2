@@ -71,6 +71,13 @@ describe('toSafeStreamErrorMessage', () => {
     expect(toSafeStreamErrorMessage(error)).toContain('Invalid or missing API key');
   });
 
+  it('still treats bearer authentication wording as a bad key', () => {
+    const error = new Error('Bearer authentication failed');
+
+    expect(toSafeStreamErrorMessage(error)).toContain('Invalid or missing API key');
+    expect(providerErrorDetails(error).message.toLowerCase()).toContain('authentication');
+  });
+
   it('redacts a bearer token that follows an authorization label', () => {
     const { message } = providerErrorDetails(new Error('authorization: Bearer secret-value'));
 

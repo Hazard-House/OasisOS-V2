@@ -128,19 +128,39 @@ export function toMissingCredentialError(provider: string, source?: unknown): Ap
   });
 }
 
-/** Status and provider text only. Drops URLs, headers, and anything that looks like a key. */
-export function providerErrorDetails(error: unknown): { statusCode?: number; message: string } {
+function providerErrorSource(error: unknown): { statusCode?: number; raw: string } {
   const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown provider error';
 
   const statusCode =
     typeof error === 'object' && error !== null && 'statusCode' in error && typeof error.statusCode === 'number'
       ? error.statusCode
       : undefined;
-  const message = raw
-    .replace(/https?:\/\/\S+/gi, '[url]')
-    .replace(/\b(?:bearer\s+)?(?:sk|rk|pk|ak)-[a-z0-9_-]{6,}\b/gi, '[redacted]')
-    .replace(/(?:api[_-]?key|token|authorization)\s*[:=]\s*(?:bearer\s+)?\S+/gi, '[redacted]')
-    .replace(/\bbearer\s+\S+/gi, '[redacted]')
+
+  return { statusCode, raw };
+}
+
+/**
+ * A lone word after Bearer, such as "authentication", is wording, not a token.
+ * Tokens carry a digit, a symbol, or a long opaque string.
+ */
+function redactBearerToken(value: string): string {
+  return value.replace(/\bbearer\s+(\S+)/gi, (match, token: string) => {
+    const looksLikeToken = token.length >= 20 || /[^a-z]/i.test(token);
+
+    return looksLikeToken ? '[redacted]' : match;
+  });
+}
+
+/** Status and provider text only. Drops URLs, headers, and anything that looks like a key. */
+export function providerErrorDetails(error: unknown): { statusCode?: number; message: string } {
+  const { statusCode, raw } = providerErrorSource(error);
+
+  const message = redactBearerToken(
+    raw
+      .replace(/https?:\/\/\S+/gi, '[url]')
+      .replace(/\b(?:bearer\s+)?(?:sk|rk|pk|ak)-[a-z0-9_-]{6,}\b/gi, '[redacted]')
+      .replace(/(?:api[_-]?key|token|authorization)\s*[:=]\s*(?:bearer\s+)?\S+/gi, '[redacted]'),
+  )
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 300);
@@ -162,8 +182,8 @@ export function isCredentialFailure(error: unknown): boolean {
     return false;
   }
 
-  const { statusCode, message } = providerErrorDetails(error);
-  const normalized = message.toLowerCase();
+  const { statusCode, raw } = providerErrorSource(error);
+  const normalized = raw.toLowerCase();
 
   return (
     statusCode === 401 ||
