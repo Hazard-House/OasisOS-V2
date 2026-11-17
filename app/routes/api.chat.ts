@@ -396,7 +396,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
             : {}),
 
           abortSignal: request.signal,
-          telemetry: { functionId: 'bolt-chat' },
+          telemetry: { isEnabled: false, functionId: 'oasisos-chat' },
           onStepEnd: ({ toolCalls, finishReason }) => {
             if (finishReason !== 'error') {
               recovery.stepSucceeded();

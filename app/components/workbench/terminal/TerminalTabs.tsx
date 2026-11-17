@@ -153,7 +153,7 @@ export const TerminalTabs = memo(() => {
           <div className="flex items-center bg-bolt-elements-background-depth-2 border-y border-bolt-elements-borderColor gap-1.5 min-h-[34px] p-2">
             {Array.from({ length: terminalCount + 1 }, (_, index) => {
               const isActive = activeTerminal === index;
-              const terminalName = index === 0 ? 'Bolt Terminal' : `Terminal ${index}`;
+              const terminalName = index === 0 ? 'OasisOS Terminal' : `Terminal ${index}`;
 
               return (
                 <React.Fragment key={index}>
@@ -173,7 +173,7 @@ export const TerminalTabs = memo(() => {
                         onClick={() => setActiveTerminal(index)}
                       >
                         <div className="i-ph:terminal-window-duotone text-lg" />
-                        Bolt Terminal
+                        OasisOS Terminal
                       </button>
                       <TerminalContextMenu
                         terminalName={terminalName}
@@ -394,7 +394,7 @@ function TerminalContextMenu({
           {commands.length > 0 && (
             <>
               <DropdownMenu.Separator className="my-1 h-px bg-bolt-elements-borderColor" />
-              <div className="px-3 py-1 text-xs text-bolt-elements-textTertiary">Recent Bolt commands</div>
+              <div className="px-3 py-1 text-xs text-bolt-elements-textTertiary">Recent commands</div>
               {commands.slice(0, 10).map((command) => (
                 <DropdownMenu.Item
                   key={command.id}

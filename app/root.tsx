@@ -4,7 +4,7 @@ import xtermStyles from '@xterm/xterm/css/xterm.css?url';
 import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction } from 'react-router';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction, type MetaFunction } from 'react-router';
 import { cssTransition, ToastContainer } from 'react-toastify';
 
 import reactToastifyStyles from 'react-toastify/dist/ReactToastify.css?url';
@@ -17,11 +17,41 @@ const toastAnimation = cssTransition({
   exit: 'animated fadeOutRight',
 });
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: 'OasisOS' },
+    { name: 'description', content: 'OasisOS builds web apps in the browser.' },
+    { name: 'application-name', content: 'OasisOS' },
+    { name: 'theme-color', content: '#092b49' },
+    { property: 'og:title', content: 'OasisOS' },
+    { property: 'og:description', content: 'OasisOS builds web apps in the browser.' },
+    { property: 'og:image', content: '/brand/og-image.png' },
+    { property: 'og:type', content: 'website' },
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'OasisOS' },
+    { name: 'twitter:description', content: 'OasisOS builds web apps in the browser.' },
+    { name: 'twitter:image', content: '/brand/og-image.png' },
+  ];
+};
+
 export const links: LinksFunction = () => [
   {
     rel: 'icon',
     href: '/favicon.svg',
     type: 'image/svg+xml',
+  },
+  {
+    rel: 'icon',
+    href: '/favicon.ico',
+    sizes: 'any',
+  },
+  {
+    rel: 'apple-touch-icon',
+    href: '/apple-touch-icon.png',
+  },
+  {
+    rel: 'manifest',
+    href: '/site.webmanifest',
   },
 
   // Preload critical styles for faster FCP
@@ -31,24 +61,6 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindReset },
   { rel: 'stylesheet', href: globalStyles },
   { rel: 'stylesheet', href: xtermStyles },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.googleapis.com',
-  },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.gstatic.com',
-    crossOrigin: 'anonymous',
-  },
-  {
-    rel: 'preload',
-    href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-    as: 'style',
-  },
-  {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-  },
   {
     rel: 'preconnect',
     href: 'https://unpkg.com',
@@ -122,7 +134,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           on the first client render (keeping hydration in sync), then swaps in the
           real tree once mounted.
         */}
-        <ClientOnly fallback={<div className="w-full h-full" />}>
+        <ClientOnly
+          fallback={
+            <div className="flex h-full w-full items-center justify-center bg-white">
+              <img src="/brand/oasis-mark-navy.png" alt="" className="h-16 w-16" />
+            </div>
+          }
+        >
           {() => <DndProvider backend={HTML5Backend}>{children}</DndProvider>}
         </ClientOnly>
         <ToastContainer

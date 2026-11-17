@@ -38,14 +38,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5173
 ENV HOST=0.0.0.0
+ENV WRANGLER_SEND_METRICS=false
 
 # Non-sensitive build arguments
 ARG VITE_LOG_LEVEL=debug
 ARG DEFAULT_NUM_CTX
 
 # Set non-sensitive environment variables
-ENV WRANGLER_SEND_METRICS=false \
-    VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
+ENV VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
     DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
     RUNNING_IN_DOCKER=true
 
@@ -62,12 +62,12 @@ RUN mkdir -p /root/.config/.wrangler && \
 
 EXPOSE 5173
 
-# Healthcheck for deployment platforms
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
-  CMD curl -fsS http://localhost:5173/ || exit 1
+# Healthcheck follows Railway's PORT when it is injected at runtime.
+HEALTHCHECK --interval=10s --timeout=3s --start-period=40s --retries=5 \
+  CMD curl -fsS "http://127.0.0.1:${PORT}/" || exit 1
 
-# Start the built app with Vite's Cloudflare preview server
-CMD ["pnpm", "run", "dockerstart"]
+# Vite preview binds to $PORT (Railway sets this; local default is 5173).
+CMD ["node", "scripts/preview-server.mjs"]
 
 
 # ---- development stage ----
@@ -87,3 +87,6 @@ ENV VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
 
 RUN mkdir -p /app/run
 CMD ["pnpm", "run", "dev", "--host"]
+
+# Default image is the production server. `docker build --target development` still builds the dev stage.
+FROM bolt-ai-production AS runtime

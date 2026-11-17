@@ -1,172 +1,79 @@
-# bolt.diy
+# OasisOS
 
-[![bolt.diy: AI-Powered Full-Stack Web Development in the Browser](./public/social_preview_index(1).jpg)](https://bolt.diy)
+OasisOS is a browser app for building web apps with an AI model. The editor, terminal, and preview run in the browser through [WebContainers](https://webcontainers.io/). This Railway service is that browser app. Generated projects do not need a separate sandbox service.
 
-Welcome to **bolt.diy**, the open-source AI developer workspace that lets you select your preferred LLM for every prompt. Build full-stack web applications in the browser with support for 22+ model providers (OpenAI, Anthropic, Gemini, Groq, xAI, DeepSeek, Ollama, LM Studio, and more), or extend it with any provider supported by the Vercel AI SDK. OpenRouter, Anthropic, OpenAI, and Google are enabled by default; enable and configure other providers in Settings.
+OasisOS is based on [bolt.diy](https://github.com/stackblitz-labs/bolt.diy). The original MIT license is in `LICENSE`.
 
-[Documentation](https://stackblitz-labs.github.io/bolt.diy/) | [FAQ & Troubleshooting](FAQ.md)
+## Run it locally
 
----
-
-bolt.diy was originally started by [Cole Medin](https://www.youtube.com/@ColeMedin) but has quickly grown into a massive community effort to build the BEST open source AI coding assistant!
-
----
-
-## Table of Contents
-
-- [Quick Start](#quick-start)
-- [Running with Docker](#running-with-docker)
-- [Desktop App (Electron)](#desktop-app-electron)
-- [Configuring API Keys and Providers](#configuring-api-keys-and-providers)
-- [Features](#features)
-- [Recent Highlights](#recent-highlights)
-- [Available Scripts](#available-scripts)
-- [Contributing & Community](#contributing--community)
-- [Licensing](#licensing)
-
----
-
-## Quick Start
-
-### Prerequisites
-- **Node.js** >= 22.12.0
-- **pnpm** >= 9.15.9 (`npm install -g pnpm`)
-
-### 1. Clone & Install
+You need Node.js >= 22.12.0 and pnpm >= 9.15.9.
 
 ```bash
-git clone https://github.com/stackblitz-labs/bolt.diy.git
-cd bolt.diy
 pnpm install
-```
-
-### 2. Run the Development Server
-
-```bash
+cp .env.example .env.local
 pnpm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open http://localhost:5173.
 
-> **Pre-built Desktop Binaries**: Prefer a standalone app? Download binaries for Windows, macOS, and Linux from our [Latest Releases](https://github.com/stackblitz-labs/bolt.diy/releases/latest).
+The dev server is enough to click around. A prompt that writes code needs one AI provider key, set in `.env.local` or under Settings.
 
----
+## Deploy on Railway
 
-## Running with Docker
+This repo ships as one container. `railway.toml` points Railway at the Dockerfile, and the server listens on `$PORT`.
 
-1. **Configure Environment Variables**:
-   ```bash
-   cp .env.example .env.local
-   # Replace the placeholders for the providers you use; remove or comment out the others.
-   cp .env.local .env
-   ```
+1. Create a Railway project from this repo.
+2. Add the env vars below on the service. You need at least one AI provider key.
+3. Deploy. Railway builds the production image and runs `node scripts/preview-server.mjs`.
 
-   Compose requires both files. It reads `.env` for variable substitution and passes both files to the container. After changing `.env.local`, copy it to `.env` again so substituted values stay in sync. Do not commit either file.
+Set `VITE_PUBLIC_APP_URL` to the public Railway URL so browser API calls are allowed. `PORT` is set by Railway. Do not hardcode it.
 
-2. **Build and Run**:
-   ```bash
-   # Development mode with hot-reload:
-   docker compose --profile development up
+WebContainers need a Chromium browser (Chrome, Edge, or another Chromium-based browser). There is no database in this app. Chats stay in the browser.
 
-   # Production build:
-   pnpm run dockerbuild:prod
-   docker compose --profile production up
-   ```
+`pnpm audit` reports no critical advisories on the current lockfile.
 
----
+## Env vars
 
-## Desktop App (Electron)
+The app starts with none of these set. Building an app needs one provider key for a provider you turn on. OpenRouter, Anthropic, OpenAI, and Google are enabled by default.
 
-bolt.diy is also available as a cross-platform desktop application:
+| Variable | Required to build | What it is |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | One provider key is required | Anthropic Claude |
+| `OPENAI_API_KEY` | One provider key is required | OpenAI |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | One provider key is required | Google Gemini |
+| `OPEN_ROUTER_API_KEY` | One provider key is required | OpenRouter |
+| `GROQ_API_KEY` | Optional provider | Groq |
+| `DEEPSEEK_API_KEY` | Optional provider | DeepSeek |
+| `MISTRAL_API_KEY` | Optional provider | Mistral |
+| `XAI_API_KEY` | Optional provider | xAI |
+| `COHERE_API_KEY` | Optional provider | Cohere |
+| `TOGETHER_API_KEY` | Optional provider | Together |
+| `FIREWORKS_API_KEY` | Optional provider | Fireworks |
+| `CEREBRAS_API_KEY` | Optional provider | Cerebras |
+| `PERPLEXITY_API_KEY` | Optional provider | Perplexity |
+| `MOONSHOT_API_KEY` | Optional provider | Moonshot |
+| `ZAI_API_KEY` | Optional provider | Z.AI |
+| `HuggingFace_API_KEY` | Optional provider | Hugging Face |
+| `HYPERBOLIC_API_KEY` | Optional provider | Hyperbolic |
+| `GITHUB_API_KEY` | Optional provider | GitHub Models |
+| `AWS_BEDROCK_CONFIG` | Optional provider | AWS Bedrock JSON config |
+| `OLLAMA_API_BASE_URL` | Optional local model | Ollama base URL |
+| `LMSTUDIO_API_BASE_URL` | Optional local model | LM Studio base URL |
+| `OPENAI_LIKE_API_BASE_URL` | Optional provider | OpenAI-compatible base URL |
+| `OPENAI_LIKE_API_KEY` | Optional provider | OpenAI-compatible key |
+| `VITE_PUBLIC_APP_URL` | Set this in production | Public origin used for CORS |
+| `PORT` | Set by Railway | HTTP port |
 
-- **Download**: Grab pre-built installers from [Latest Releases](https://github.com/stackblitz-labs/bolt.diy/releases/latest).
-- **Build from Source**: Select the target for your host platform:
-  ```bash
-  pnpm electron:build:win   # Windows
-  pnpm electron:build:mac   # macOS
-  pnpm electron:build:linux # Linux
-  ```
+These are optional and only matter if you connect the matching product in Settings:
 
-  `pnpm electron:build:unpack` creates an unpacked build for testing. `pnpm electron:build:dist` requests all three platforms and may require platform-specific build tools or signing configuration. The `electron:dev` script checks for the development server with `lsof`, so it needs that command available and does not work in a standard Windows shell without it.
+`VITE_GITHUB_ACCESS_TOKEN`, `VITE_GITHUB_TOKEN_TYPE`, `VITE_GITLAB_ACCESS_TOKEN`, `VITE_GITLAB_URL`, `VITE_GITLAB_TOKEN_TYPE`, `VITE_VERCEL_ACCESS_TOKEN`, `VITE_NETLIFY_ACCESS_TOKEN`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_ACCESS_TOKEN`.
 
----
+Keys typed into Settings are stored in browser cookies and sent to this app's server with chat requests. Use HTTPS on a shared deployment.
 
-## Configuring API Keys and Providers
+See `.env.example` for placeholders and links to each provider's key page.
 
-You can configure model providers either directly in the UI or via environment variables:
+## License
 
-### Option A: In the UI (Recommended)
-Enable providers and configure supported local endpoints under **Settings → Providers**. Select a provider in the chat composer, click **Edit API Key**, enter the key, and save it. Keys entered in the UI are stored in JavaScript-accessible browser cookies and sent to the application server with requests. The indicator shows that a key is set; it does not guarantee that the provider accepts it. Protect access to the browser and use HTTPS for remote deployments.
+OasisOS keeps the upstream MIT license. Copyright (c) 2024 StackBlitz, Inc. and bolt.diy contributors. See `LICENSE`.
 
-### Option B: Environment Variables
-Copy `.env.example` to `.env.local` and add your keys or local endpoints:
-
-```bash
-# Cloud Providers
-ANTHROPIC_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
-GOOGLE_GENERATIVE_AI_API_KEY=your_key_here
-OPEN_ROUTER_API_KEY=your_key_here
-
-# Local Providers
-OLLAMA_API_BASE_URL=http://127.0.0.1:11434
-LMSTUDIO_API_BASE_URL=http://127.0.0.1:1234
-```
-
-Replace only the placeholders you need and remove or comment out the rest. To use OpenRouter's free router, select **OpenRouter** in the provider selector, then select **Free Models Router** (`openrouter/free`) in the model selector. Free-model availability and rate limits depend on OpenRouter. For Docker, `127.0.0.1` refers to the container; configure local provider endpoints to reach the host instead, for example with `host.docker.internal` where supported.
-
----
-
-## Features
-
-- **In-Browser Web Development**: Full-stack Node.js development environment powered by WebContainers.
-- **22+ AI Providers**: Cloud (Anthropic, OpenAI, Google, DeepSeek, Groq, xAI, Mistral, etc.) and Local (Ollama, LM Studio). OpenRouter, Anthropic, OpenAI, and Google are enabled by default.
-- **Interactive Workbench**: Integrated code editor, terminal, visual diff viewer, and real-time live preview. Opens by default for a started chat and can be reopened after closing.
-- **Starter Setup**: Explicit framework requests select a matching starter in code. Starter files include detected install and development server commands before the first customization request.
-- **Prompt Library**: Choose a system prompt under Settings → Workspace → Features, including Simple Sal for concise guidance and Tiny Tim for smaller models.
-- **Project Workflows**: Git cloning/pushing, snapshot restoration, file conflict locking, and ZIP export.
-- **Deployments**: One-click deployment to Netlify, Vercel, and GitHub Pages.
-- **Database & Visuals**: Supabase integration, data visualization charts, and Model Context Protocol (MCP) tooling.
-
----
-
-## Recent Highlights
-
-- **Expanded AI & Tooling Ecosystem**: 22+ cloud and local LLM providers, Model Context Protocol (MCP) integration, and voice prompting.
-- **Enhanced Code & Project Workflows**: Visual diff inspection, file conflict locking, codebase search, Git integration, and snapshot restoration.
-- **Cross-Platform & Deployments**: Native Electron desktop app, Expo (React Native) support, and direct deployment to Netlify, Vercel, and GitHub Pages.
-- **Data & Backend Integrations**: Built-in Supabase management, interactive charts, and bulk chat operations.
-- **Prompt and Connector Controls**: Select MCP tools from the prompt attachment menu; manage GitHub, GitLab, Netlify, and other service connections under Settings → Integrations → Connectors.
-
-> **Looking Ahead**: Ongoing work focuses on bug fixes, dependency updates, and reliability improvements; no new features are planned.
-
----
-
-## Available Scripts
-
-| Command | Description |
-|---|---|
-| `pnpm run dev` | Start development server with hot module reloading |
-| `pnpm run build` | Build the application for production (`react-router build`) |
-| `pnpm run preview` | Preview production build locally |
-| `pnpm test` | Run the Vitest suite, including unit, integration, and performance tests |
-| `pnpm run typecheck` | Run TypeScript type checks (`tsc`) |
-| `pnpm run lint` | Run ESLint across the codebase |
-| `pnpm run dockerbuild` | Build Docker container for development |
-| `pnpm run electron:dev` | Start Electron desktop application in dev mode |
-| `pnpm electron:build:win`, `pnpm electron:build:mac`, `pnpm electron:build:linux` | Package Electron for the specified platform |
-| `pnpm electron:build:dist` | Request Electron builds for Windows, macOS, and Linux |
-
----
-
-## Contributing & Community
-
-- **Contributing**: Contributions are welcome! Read our [Contributing Guide](CONTRIBUTING.md) and [Project Management Guide](./PROJECT.md) to get started.
-- **Troubleshooting & FAQ**: Common errors and setup fixes are documented in our [FAQ](FAQ.md) and [Official Docs](https://stackblitz-labs.github.io/bolt.diy/).
-
-
----
-
-## Licensing
-
-bolt.diy is open-source under the MIT License. It utilizes the [WebContainers API](https://webcontainers.io/enterprise), which has specific commercial licensing terms for enterprise deployment.
+WebContainers has its own terms for commercial hosting. Read them before you use this beyond a proof of concept: https://webcontainers.io/enterprise

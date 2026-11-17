@@ -462,7 +462,7 @@ export const Preview = memo(({ selectedElement, setSelectedElement }: PreviewPro
                   height: 100vh;
                   background: #f0f0f0;
                   overflow: hidden;
-                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                  font-family: Inter, sans-serif;
                 }
                 
                 .device-container {

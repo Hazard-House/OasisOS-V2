@@ -1,6 +1,6 @@
-import { globSync } from 'fast-glob';
 import fs from 'node:fs/promises';
 import { basename } from 'node:path';
+import { globSync } from 'fast-glob';
 import { defineConfig, presetIcons, presetUno, transformerDirectives } from 'unocss';
 
 const iconPaths = globSync('./icons/*.svg');
@@ -22,30 +22,43 @@ const customIconCollection = iconPaths.reduce(
 const BASE_COLORS = {
   white: '#FFFFFF',
   gray: {
-    50: '#FAFAFA',
-    100: '#F5F5F5',
-    200: '#E5E5E5',
-    300: '#D4D4D4',
-    400: '#A3A3A3',
-    500: '#737373',
-    600: '#525252',
-    700: '#404040',
-    800: '#262626',
-    900: '#171717',
-    950: '#0A0A0A',
+    50: '#F4F7FB',
+    100: '#E7EEF5',
+    200: '#D5E0EB',
+    300: '#B7C8D8',
+    400: '#8AA3BA',
+    500: '#5C7690',
+    600: '#3D5A73',
+    700: '#24425C',
+    800: '#13466F',
+    900: '#0C3558',
+    950: '#092B49',
   },
   accent: {
-    50: '#F8F5FF',
-    100: '#F0EBFF',
-    200: '#E1D6FF',
-    300: '#CEBEFF',
-    400: '#B69EFF',
-    500: '#9C7DFF',
-    600: '#8A5FFF',
-    700: '#7645E8',
-    800: '#6234BB',
-    900: '#502D93',
-    950: '#2D1959',
+    50: '#FFFBEA',
+    100: '#FFF4C2',
+    200: '#FFE98A',
+    300: '#FCD10F',
+    400: '#FCD10F',
+    500: '#092B49',
+    600: '#071F36',
+    700: '#071F36',
+    800: '#06182B',
+    900: '#04101C',
+    950: '#02080F',
+  },
+  purple: {
+    50: '#F4F7FB',
+    100: '#E7EEF5',
+    200: '#C5D4E4',
+    300: '#8EABC6',
+    400: '#FCD10F',
+    500: '#092B49',
+    600: '#092B49',
+    700: '#071F36',
+    800: '#0C3558',
+    900: '#092B49',
+    950: '#04101C',
   },
   green: {
     50: '#F0FDF4',
@@ -113,6 +126,9 @@ export default defineConfig({
     ['b', {}],
   ],
   theme: {
+    fontFamily: {
+      sans: 'Inter, sans-serif',
+    },
     colors: {
       ...COLOR_PRIMITIVES,
       bolt: {
