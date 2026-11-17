@@ -53,6 +53,7 @@ export const shortcutsStore = map<Shortcuts>({
 // Create a single key for provider settings
 const PROVIDER_SETTINGS_KEY = 'provider_settings';
 const AUTO_ENABLED_KEY = 'auto_enabled_providers';
+const USER_DISABLED_KEY = 'provider_user_disabled';
 
 // Add this helper function at the top of the file
 const isBrowser = typeof window !== 'undefined';
@@ -120,7 +121,7 @@ const getInitialProviderSettings = (): ProviderSetting => {
   return initialSettings;
 };
 
-// Auto-enable providers that are configured on the server
+// Auto-enable providers that have a key or base URL on the server
 const autoEnableConfiguredProviders = async () => {
   if (!isBrowser) {
     return;
@@ -129,56 +130,40 @@ const autoEnableConfiguredProviders = async () => {
   try {
     const configuredProviders = await fetchConfiguredProviders();
     const currentSettings = providersStore.get();
-    const savedSettings = localStorage.getItem(PROVIDER_SETTINGS_KEY);
-    const autoEnabledProviders = localStorage.getItem(AUTO_ENABLED_KEY);
-
-    // Track which providers were auto-enabled to avoid overriding user preferences
-    const previouslyAutoEnabled = autoEnabledProviders ? JSON.parse(autoEnabledProviders) : [];
+    const userDisabled = readUserDisabledProviders();
     const newlyAutoEnabled: string[] = [];
 
     let hasChanges = false;
 
     configuredProviders.forEach(({ name, isConfigured, configMethod }) => {
-      if (isConfigured && configMethod === 'environment' && LOCAL_PROVIDERS.includes(name)) {
-        const currentProvider = currentSettings[name];
-
-        if (currentProvider) {
-          /*
-           * Only auto-enable if:
-           * 1. Provider is not already enabled, AND
-           * 2. The provider was previously auto-enabled by this feature
-           */
-          const hasUserSettings = savedSettings !== null;
-          const wasAutoEnabled = previouslyAutoEnabled.includes(name);
-          const shouldAutoEnable = hasUserSettings && !currentProvider.settings.enabled && wasAutoEnabled;
-
-          if (shouldAutoEnable) {
-            currentSettings[name] = {
-              ...currentProvider,
-              settings: {
-                ...currentProvider.settings,
-                enabled: true,
-              },
-            };
-            newlyAutoEnabled.push(name);
-            hasChanges = true;
-          }
-        }
+      if (!isConfigured || configMethod !== 'environment' || userDisabled.includes(name)) {
+        return;
       }
+
+      const currentProvider = currentSettings[name];
+
+      if (!currentProvider || currentProvider.settings.enabled) {
+        return;
+      }
+
+      currentSettings[name] = {
+        ...currentProvider,
+        settings: {
+          ...currentProvider.settings,
+          enabled: true,
+        },
+      };
+      newlyAutoEnabled.push(name);
+      hasChanges = true;
     });
 
     if (hasChanges) {
-      // Update the store
       providersStore.set(currentSettings);
-
-      // Save to localStorage
       localStorage.setItem(PROVIDER_SETTINGS_KEY, JSON.stringify(currentSettings));
 
-      // Update the auto-enabled providers list
+      const previouslyAutoEnabled = readNameList(AUTO_ENABLED_KEY);
       const allAutoEnabled = [...new Set([...previouslyAutoEnabled, ...newlyAutoEnabled])];
       localStorage.setItem(AUTO_ENABLED_KEY, JSON.stringify(allAutoEnabled));
-
-      console.log(`Auto-enabled providers: ${newlyAutoEnabled.join(', ')}`);
     }
   } catch (error) {
     console.error('Error auto-enabling configured providers:', error);
@@ -218,8 +203,7 @@ export const updateProviderSettings = (provider: string, settings: IProviderSett
   const allSettings = providersStore.get();
   localStorage.setItem(PROVIDER_SETTINGS_KEY, JSON.stringify(allSettings));
 
-  // If this is a local provider, update the auto-enabled tracking
-  if (LOCAL_PROVIDERS.includes(provider) && updatedProvider.settings.enabled !== undefined) {
+  if (updatedProvider.settings.enabled !== undefined) {
     updateAutoEnabledTracking(provider, updatedProvider.settings.enabled);
   }
 };
@@ -231,24 +215,48 @@ const updateAutoEnabledTracking = (providerName: string, isEnabled: boolean) => 
   }
 
   try {
-    const autoEnabledProviders = localStorage.getItem(AUTO_ENABLED_KEY);
-    const currentAutoEnabled = autoEnabledProviders ? JSON.parse(autoEnabledProviders) : [];
+    const currentAutoEnabled = readNameList(AUTO_ENABLED_KEY);
+    const userDisabled = readUserDisabledProviders();
 
     if (isEnabled) {
-      // If user enables provider, add to auto-enabled list (for future detection)
       if (!currentAutoEnabled.includes(providerName)) {
         currentAutoEnabled.push(providerName);
         localStorage.setItem(AUTO_ENABLED_KEY, JSON.stringify(currentAutoEnabled));
       }
+
+      if (userDisabled.includes(providerName)) {
+        localStorage.setItem(USER_DISABLED_KEY, JSON.stringify(userDisabled.filter((name) => name !== providerName)));
+      }
     } else {
-      // If user disables provider, remove from auto-enabled list (respect user choice)
-      const updatedAutoEnabled = currentAutoEnabled.filter((name: string) => name !== providerName);
-      localStorage.setItem(AUTO_ENABLED_KEY, JSON.stringify(updatedAutoEnabled));
+      localStorage.setItem(
+        AUTO_ENABLED_KEY,
+        JSON.stringify(currentAutoEnabled.filter((name) => name !== providerName)),
+      );
+
+      if (!userDisabled.includes(providerName)) {
+        userDisabled.push(providerName);
+        localStorage.setItem(USER_DISABLED_KEY, JSON.stringify(userDisabled));
+      }
     }
   } catch (error) {
     console.error('Error updating auto-enabled tracking:', error);
   }
 };
+
+function readNameList(key: string): string[] {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+
+    return Array.isArray(parsed) ? parsed.filter((name) => typeof name === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function readUserDisabledProviders() {
+  return readNameList(USER_DISABLED_KEY);
+}
 
 export const isDebugMode = atom(false);
 

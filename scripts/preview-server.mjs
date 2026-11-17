@@ -11,6 +11,9 @@ const child = spawn(process.execPath, [viteBin, 'preview', '--host', host, '--po
   stdio: 'inherit',
   env: {
     ...process.env,
+    // Wrangler only copies process.env into the Worker when this is true.
+    // Railway injects keys into the container, not into Cloudflare bindings.
+    CLOUDFLARE_INCLUDE_PROCESS_ENV: 'true',
     __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: allowedHosts.join(','),
   },
 });
