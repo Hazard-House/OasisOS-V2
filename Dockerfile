@@ -10,7 +10,7 @@ ENV CI=true
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 # Ensure git is available for build and runtime scripts
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 # Accept (optional) build-time public URL for Remix/Vite (Coolify can pass it)
@@ -53,8 +53,7 @@ ENV VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
 # Example: docker run -e OPENAI_API_KEY=your_key_here ...
 
 # Install curl for healthchecks
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Pre-configure wrangler to disable metrics
 RUN mkdir -p /root/.config/.wrangler && \
