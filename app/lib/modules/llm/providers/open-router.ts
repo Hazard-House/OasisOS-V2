@@ -3,6 +3,17 @@ import type { LanguageModel } from 'ai';
 import { BaseProvider } from '~/lib/modules/llm/base-provider';
 import type { ModelInfo } from '~/lib/modules/llm/types';
 import type { IProviderSetting } from '~/types/model';
+import { createScopedLogger } from '~/utils/logger';
+
+const logger = createScopedLogger('OpenRouter');
+
+/** Public prefix only. The rest of the key is never written to logs. */
+export function openRouterKeyShape(apiKey: string): string {
+  const placeholder = apiKey === 'your_openrouter_api_key_here' || apiKey.includes('your_');
+  const prefix = apiKey.startsWith('sk-or-') ? 'sk-or' : 'other';
+
+  return `keyLength=${apiKey.length} keyPrefix=${prefix} placeholder=${placeholder}`;
+}
 
 interface OpenRouterModel {
   name: string;
@@ -113,6 +124,8 @@ export default class OpenRouterProvider extends BaseProvider {
     if (!apiKey) {
       throw new Error(`Missing API key for ${this.name} provider`);
     }
+
+    logger.info(openRouterKeyShape(apiKey));
 
     const openRouter = createOpenRouter({
       apiKey,

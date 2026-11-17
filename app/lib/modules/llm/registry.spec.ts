@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BaseProvider } from './base-provider';
+import { openRouterKeyShape } from './providers/open-router';
 import * as providers from './registry';
 
 describe('LLM provider registry', () => {
@@ -34,5 +35,14 @@ describe('LLM provider registry', () => {
     expect(provider.name).toBe('OpenRouter');
     expect(provider.config.apiTokenKey).toBe('OPEN_ROUTER_API_KEY');
     expect(provider.staticModels.length).toBeGreaterThan(0);
+  });
+
+  it('describes an OpenRouter key without copying the secret', () => {
+    const secret = 'sk-or-v1-secretvalue';
+    const shape = openRouterKeyShape(secret);
+
+    expect(shape).toBe(`keyLength=${secret.length} keyPrefix=sk-or placeholder=false`);
+    expect(shape).not.toContain('secretvalue');
+    expect(openRouterKeyShape('your_openrouter_api_key_here')).toContain('placeholder=true');
   });
 });

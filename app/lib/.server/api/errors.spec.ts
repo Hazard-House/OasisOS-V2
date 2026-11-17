@@ -66,7 +66,7 @@ describe('toSafeStreamErrorMessage', () => {
       responseHeaders: { authorization: 'secret-value' },
     });
 
-    const responseMessage = toSafeStreamErrorMessage(error, { provider: 'OpenRouter', model: 'openai/gpt-4o-mini' });
+    const responseMessage = toSafeStreamErrorMessage(error);
 
     expect(responseMessage).toContain('Invalid or missing API key');
     expect(responseMessage).not.toContain('secret-value');
