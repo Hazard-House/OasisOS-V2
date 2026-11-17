@@ -87,7 +87,7 @@ function PluginCard({
         onClick={onOpen}
         className="flex flex-1 appearance-none items-start gap-3 border-0 bg-transparent text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-400">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-400 dark:text-[#fcd10f]">
           <Blocks className="h-5 w-5" />
         </span>
         <span className="min-w-0">
@@ -370,7 +370,9 @@ export default function PluginTab() {
         <>
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-400">Extensions</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-400 dark:text-[#fcd10f]">
+                Extensions
+              </p>
               <h2 className="mt-1 text-2xl font-semibold text-bolt-elements-textPrimary">Plugin Marketplace</h2>
               <p className="mt-1 max-w-2xl text-sm text-bolt-elements-textSecondary">
                 Discover and manage reviewed plugins from the Bolt marketplace.
@@ -714,7 +716,7 @@ function PluginDetails({
       </button>
       <header className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-bolt-elements-borderColor bg-bolt-elements-background-depth-2 p-5">
         <div className="flex gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 dark:text-[#fcd10f]">
             <Blocks className="h-7 w-7" />
           </span>
           <div>
@@ -951,7 +953,9 @@ function DeveloperWizard({
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-400">Extensions</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-400 dark:text-[#fcd10f]">
+            Extensions
+          </p>
           <h2 className="mt-1 text-2xl font-semibold text-bolt-elements-textPrimary">Develop Plugin</h2>
           <p className="mt-1 text-sm text-bolt-elements-textSecondary">
             Create a validated draft for a supported Bolt adapter.
@@ -1087,7 +1091,7 @@ function DeveloperWizard({
                     )
                   }
                 />{' '}
-                <Wrench className="h-4 w-4 text-purple-400" />
+                <Wrench className="h-4 w-4 text-purple-400 dark:text-[#fcd10f]" />
                 <span className="capitalize">
                   {tool === 'count' ? 'Count words, characters, and lines' : 'Transform text'}
                 </span>

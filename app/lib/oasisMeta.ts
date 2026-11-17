@@ -50,12 +50,18 @@ function resolveOrigin(args?: MetaInput): string | undefined {
 }
 
 function absoluteUrl(origin: string | undefined, path: string): string | undefined {
-  if (!origin) {
+  if (!origin || !path.startsWith('/') || path.startsWith('//')) {
     return undefined;
   }
 
   try {
-    return new URL(path, origin).toString();
+    const url = new URL(path, origin);
+
+    if (url.origin !== origin) {
+      return undefined;
+    }
+
+    return url.toString();
   } catch {
     return undefined;
   }
@@ -64,8 +70,9 @@ function absoluteUrl(origin: string | undefined, path: string): string | undefin
 export function oasisMeta(title = 'OasisOS', args?: MetaInput): MetaDescriptor[] {
   const origin = resolveOrigin(args);
   const pathname = args?.location?.pathname || '/';
-  const search = args?.location?.search || '';
-  const pageUrl = absoluteUrl(origin, `${pathname}${search}`);
+  const search = args?.location?.search?.startsWith('?') ? args.location.search : '';
+  const safePath = pathname.startsWith('/') && !pathname.startsWith('//') ? pathname : '/';
+  const pageUrl = absoluteUrl(origin, `${safePath}${search}`);
   const imageUrl = absoluteUrl(origin, IMAGE_PATH) ?? IMAGE_PATH;
 
   return [

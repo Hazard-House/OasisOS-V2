@@ -43,7 +43,7 @@ const BETA_TABS = new Set<TabType>(['local-providers', 'mcp']);
 
 const BetaLabel = () => (
   <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-purple-500/10 dark:bg-purple-500/20">
-    <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">BETA</span>
+    <span className="text-[10px] font-medium text-purple-600 dark:text-[#fcd10f]">BETA</span>
   </div>
 );
 

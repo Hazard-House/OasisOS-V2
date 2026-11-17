@@ -54,7 +54,7 @@ function ProviderCard({
             <Icon
               className={classNames(
                 'h-5 w-5 transition-colors',
-                provider.settings.enabled ? 'text-purple-400' : 'text-bolt-elements-textSecondary',
+                provider.settings.enabled ? 'text-purple-400 dark:text-[#fcd10f]' : 'text-bolt-elements-textSecondary',
               )}
             />
           </div>
