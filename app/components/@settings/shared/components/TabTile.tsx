@@ -81,7 +81,7 @@ export const TabTile: React.FC<TabTileProps> = ({
                     className={classNames(
                       'text-[15px] font-medium leading-snug mb-2',
                       'text-bolt-elements-textPrimary',
-                      'group-hover:text-purple-600 dark:group-hover:text-purple-300/90',
+                      'group-hover:text-purple-600 dark:group-hover:text-[#fcd10fe6]',
                       'transition-colors duration-100 ease-out',
                       isActive ? 'text-purple-500 dark:text-[#fcd10fe6]' : '',
                     )}

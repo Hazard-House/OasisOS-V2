@@ -1,5 +1,4 @@
 const LOCAL_HOSTS = ['localhost'];
-const RAILWAY_HOST_SUFFIX = '.up.railway.app';
 
 function hostnameFrom(value) {
   if (!value) {
@@ -20,7 +19,7 @@ function hostnameFrom(value) {
 }
 
 export function previewAllowedHosts(env = process.env) {
-  const hosts = new Set([RAILWAY_HOST_SUFFIX, ...LOCAL_HOSTS]);
+  const hosts = new Set(LOCAL_HOSTS);
   const fromPublicUrl = hostnameFrom(env.VITE_PUBLIC_APP_URL);
   const fromRailwayDomain = hostnameFrom(env.RAILWAY_PUBLIC_DOMAIN);
 
