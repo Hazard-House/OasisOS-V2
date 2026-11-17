@@ -120,13 +120,12 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
      * v7 exposes one stream per streamText call, so progress is observed through
      * onChunk rather than by iterating the stream alongside the UI merge.
      */
-    const observeChunk = ({ chunk }: { chunk: unknown }) => {
-      const part = chunk as { type?: string };
-
-      if (part.type === 'error') {
-        logger.error('Streaming provider error');
-      }
-    };
+    /*
+     * Provider failures are logged in streamText. The callback itself stays:
+     * continuation segments are only marked active while onChunk runs, and
+     * without it a slow continuation looks stalled.
+     */
+    const observeChunk = () => undefined;
 
     const uiStream = createChatUIMessageStream(messages, {
       async execute({ writer }) {

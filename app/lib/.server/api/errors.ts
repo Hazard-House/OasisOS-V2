@@ -115,9 +115,9 @@ export class RequestAbortedError extends ApiError {
  * provider diagnostics out of the client response because they can contain
  * request URLs or credential data.
  */
-export function toMissingCredentialError(provider: string, providerMessage?: string): ApiError {
-  if (providerMessage) {
-    logger.warn('Provider credential error');
+export function toMissingCredentialError(provider: string, source?: unknown): ApiError {
+  if (source !== undefined) {
+    logProviderFailure(source, { provider });
   }
 
   return new ApiError('Invalid or missing API key', {
@@ -128,15 +128,59 @@ export function toMissingCredentialError(provider: string, providerMessage?: str
   });
 }
 
-/** Converts a streaming provider error to a client-safe hint without forwarding diagnostics. */
-export function toSafeStreamErrorMessage(error: unknown): string {
-  const providerMessage = error instanceof Error ? error.message : String(error);
-  const normalizedMessage = providerMessage.toLowerCase();
+/** Status and provider text only. Drops URLs, headers, and anything that looks like a key. */
+export function providerErrorDetails(error: unknown): { statusCode?: number; message: string } {
+  const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown provider error';
 
   const statusCode =
-    typeof error === 'object' && error !== null && 'statusCode' in error ? error.statusCode : undefined;
+    typeof error === 'object' && error !== null && 'statusCode' in error && typeof error.statusCode === 'number'
+      ? error.statusCode
+      : undefined;
+  const message = raw
+    .replace(/https?:\/\/\S+/gi, '[url]')
+    .replace(/\b(?:bearer\s+)?(?:sk|rk|pk|ak)-[a-z0-9_-]{6,}\b/gi, '[redacted]')
+    .replace(/(?:api[_-]?key|token|authorization)\s*[:=]\s*\S+/gi, '[redacted]')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 300);
 
-  logger.error(`Streaming provider error (${error instanceof Error ? error.name : 'UnknownError'})`);
+  return { statusCode, message: message || 'Unknown provider error' };
+}
+
+/** One line: status, provider, model, and the provider message. Never headers or the key. */
+export function logProviderFailure(error: unknown, context: { provider?: string; model?: string } = {}): void {
+  const { statusCode, message } = providerErrorDetails(error);
+
+  logger.error(
+    `provider=${context.provider ?? 'unknown'} model=${context.model ?? 'unknown'} status=${statusCode ?? 'none'} message=${message}`,
+  );
+}
+
+export function isCredentialFailure(error: unknown): boolean {
+  if (isTypedFailure(error)) {
+    return false;
+  }
+
+  const { statusCode, message } = providerErrorDetails(error);
+  const normalized = message.toLowerCase();
+
+  return (
+    statusCode === 401 ||
+    normalized.includes('api key') ||
+    normalized.includes('unauthorized') ||
+    normalized.includes('authentication') ||
+    normalized.includes('user not found') ||
+    normalized.includes('no auth') ||
+    normalized.includes('invalid credentials')
+  );
+}
+
+/** Converts a streaming provider error to a client-safe hint without forwarding diagnostics. */
+export function toSafeStreamErrorMessage(error: unknown, context: { provider?: string; model?: string } = {}): string {
+  const { message: providerMessage, statusCode } = providerErrorDetails(error);
+  const normalizedMessage = providerMessage.toLowerCase();
+
+  logProviderFailure(error, context);
 
   if ((error instanceof Error && error.name === 'TimeoutError') || /timeout|timed\s*out/.test(normalizedMessage)) {
     return 'Custom error: The AI provider stopped responding before the next step completed. Completed file changes and tool results are preserved. Retry to continue, or select a different model.';
@@ -162,11 +206,7 @@ export function toSafeStreamErrorMessage(error: unknown): string {
     return 'Custom error: The AI service returned an invalid response. This may be due to an invalid model name, API rate limiting, or server issues. Try selecting a different model or check your API key.';
   }
 
-  if (
-    providerMessage.includes('API key') ||
-    providerMessage.includes('unauthorized') ||
-    providerMessage.includes('authentication')
-  ) {
+  if (isCredentialFailure(error)) {
     return 'Custom error: Invalid or missing API key. Please check your API key configuration.';
   }
 
@@ -210,9 +250,9 @@ export function toSafeTextStream(stream: ReadableStream<string>): ReadableStream
         }
 
         controller.enqueue(encoder.encode(value));
-      } catch {
+      } catch (error) {
         failed = true;
-        logger.error('Streaming provider error');
+        logProviderFailure(error);
         reader.releaseLock();
         controller.enqueue(
           encoder.encode('Custom error: The AI provider request failed. Check your provider settings and try again.'),
@@ -301,7 +341,7 @@ export function toApiErrorResponse(error: unknown, fallbackProvider = 'unknown')
     );
   }
 
-  logger.error('Unhandled route error');
+  logProviderFailure(error, { provider: fallbackProvider });
 
   return Response.json(
     {

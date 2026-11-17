@@ -4,6 +4,7 @@ import { MAX_TOKENS, PROVIDER_COMPLETION_LIMITS, isReasoningModel, type FileMap 
 import { prepareModelMessages } from './model-messages';
 import { withDevelopmentCommentaryWorkstyle } from './prompt-workstyle';
 import { createFilesContext, extractPropertiesFromMessage } from './utils';
+import { logProviderFailure } from '~/lib/.server/api/errors';
 import { PromptLibrary } from '~/lib/common/prompt-library';
 import { discussPrompt } from '~/lib/common/prompts/discuss-prompt';
 import { getSystemPrompt } from '~/lib/common/prompts/prompts';
@@ -342,34 +343,20 @@ export async function streamText(props: {
         )
       : options || {};
 
-  // DEBUG: Log filtered options
-  logger.info(
-    `DEBUG STREAM: Options filtering for model "${modelDetails.name}":`,
-    JSON.stringify(
-      {
-        isReasoning,
-        originalOptions: options || {},
-        filteredOptions,
-        originalOptionsKeys: options ? Object.keys(options) : [],
-        filteredOptionsKeys: Object.keys(filteredOptions),
-        removedParams: options ? Object.keys(options).filter((key) => !(key in filteredOptions)) : [],
-      },
-      null,
-      2,
-    ),
-  );
-
   /*
    * supabaseConnection is Bolt's own option, not a v7 one. It is consumed above
    * to build the system prompt, and must not be forwarded, because v7 spreads
    * unknown keys all the way into the model call where they are silently
    * ignored. messages is excluded because this module builds the prompt itself.
+   * onError is wrapped so a provider failure logs status, provider, model, and
+   * message only. The SDK default prints the error object, including headers.
    */
   const {
     supabaseConnection: _supabaseConnection,
     messages: _messages,
     system: additionalSystemInstructions,
     onToolCallRetry,
+    onError: callerOnError,
     ...forwardedOptions
   } = filteredOptions as StreamingOptions & Record<string, unknown>;
 
@@ -408,24 +395,16 @@ export async function streamText(props: {
 
     // Set temperature to 1 for reasoning models (required by OpenAI API)
     ...(isReasoning ? { temperature: 1 } : {}),
-  };
+    onError: (event: { error: unknown }) => {
+      logProviderFailure(event.error, { provider: provider.name, model: modelDetails.name });
 
-  // DEBUG: Log final streaming parameters
-  logger.info(
-    `DEBUG STREAM: Final streaming params for model "${modelDetails.name}":`,
-    JSON.stringify(
-      {
-        hasTemperature: 'temperature' in streamParams,
-        hasMaxOutputTokens: 'maxOutputTokens' in streamParams,
-        paramKeys: Object.keys(streamParams).filter((key) => !['model', 'messages', 'system'].includes(key)),
-        streamParams: Object.fromEntries(
-          Object.entries(streamParams).filter(([key]) => !['model', 'messages', 'system'].includes(key)),
-        ),
-      },
-      null,
-      2,
-    ),
-  );
+      if (typeof callerOnError === 'function') {
+        return callerOnError(event);
+      }
+
+      return undefined;
+    },
+  };
 
   return await _streamText(streamParams);
 }

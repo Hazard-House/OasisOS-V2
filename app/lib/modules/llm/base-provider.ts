@@ -7,6 +7,27 @@ import type { IProviderSetting } from '~/types/model';
 /** Default timeout for model listing API calls (5 seconds) */
 const MODEL_FETCH_TIMEOUT = 5_000;
 
+/**
+ * Railway and the settings form often store a pasted key with quotes, a
+ * Bearer prefix, or a trailing newline. OpenRouter treats that whole string
+ * as the credential and answers 401 "User not found."
+ */
+export function normalizeCredential(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  let next = value.replace(/^\uFEFF/, '').trim();
+
+  if ((next.startsWith('"') && next.endsWith('"')) || (next.startsWith("'") && next.endsWith("'"))) {
+    next = next.slice(1, -1).trim();
+  }
+
+  next = next.replace(/^bearer\s+/i, '').trim();
+
+  return next.length > 0 ? next : undefined;
+}
+
 export abstract class BaseProvider implements ProviderInfo {
   abstract name: string;
   abstract staticModels: ModelInfo[];
@@ -82,11 +103,11 @@ export abstract class BaseProvider implements ProviderInfo {
     const baseUrlKey = this.config.baseUrlKey || defaultBaseUrlKey;
 
     let baseUrl =
-      settingsBaseUrl ||
-      serverEnv?.[baseUrlKey] ||
-      process?.env?.[baseUrlKey] ||
-      managerEnv?.[baseUrlKey] ||
-      this.config.baseUrl;
+      normalizeCredential(settingsBaseUrl) ||
+      normalizeCredential(serverEnv?.[baseUrlKey]) ||
+      normalizeCredential(process?.env?.[baseUrlKey]) ||
+      normalizeCredential(managerEnv?.[baseUrlKey]) ||
+      normalizeCredential(this.config.baseUrl);
 
     if (baseUrl && baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
@@ -95,7 +116,10 @@ export abstract class BaseProvider implements ProviderInfo {
     const apiTokenKey = this.config.apiTokenKey || defaultApiTokenKey;
 
     const apiKey =
-      apiKeys?.[this.name] || serverEnv?.[apiTokenKey] || process?.env?.[apiTokenKey] || managerEnv?.[apiTokenKey];
+      normalizeCredential(apiKeys?.[this.name]) ||
+      normalizeCredential(serverEnv?.[apiTokenKey]) ||
+      normalizeCredential(process?.env?.[apiTokenKey]) ||
+      normalizeCredential(managerEnv?.[apiTokenKey]);
 
     return {
       baseUrl,

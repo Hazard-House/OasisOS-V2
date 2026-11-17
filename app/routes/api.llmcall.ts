@@ -2,6 +2,7 @@ import { generateText, type UIMessage } from 'ai';
 import type { ActionFunctionArgs } from 'react-router';
 import {
   ApiError,
+  isCredentialFailure,
   isTokenLimitFailure,
   toApiErrorResponse,
   toMissingCredentialError,
@@ -135,8 +136,8 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
         return toApiErrorResponse(toTokenLimitError(providerName));
       }
 
-      if (error instanceof Error && error.message?.includes('API key')) {
-        return toApiErrorResponse(toMissingCredentialError(providerName, error.message));
+      if (isCredentialFailure(error)) {
+        return toApiErrorResponse(toMissingCredentialError(providerName, error));
       }
 
       return toApiErrorResponse(error, providerName);
@@ -182,9 +183,7 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
 
       logger.info(`Generating response Provider: ${provider.name}, Model: ${modelDetails.name}`);
 
-      // DEBUG: Log reasoning model detection
       const isReasoning = isReasoningModel(modelDetails.name);
-      logger.info(`DEBUG: Model "${modelDetails.name}" detected as reasoning model: ${isReasoning}`);
 
       /*
        * v5 folded maxTokens and maxCompletionTokens into maxOutputTokens. The old
@@ -216,25 +215,6 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
         ? { ...baseParams, temperature: 1 } // Set to 1 for reasoning models (only supported value)
         : { ...baseParams, temperature: 0 };
 
-      // DEBUG: Log final parameters
-      logger.info(
-        `DEBUG: Final params for model "${modelDetails.name}":`,
-        JSON.stringify(
-          {
-            isReasoning,
-            hasTemperature: 'temperature' in finalParams,
-            hasMaxOutputTokens: 'maxOutputTokens' in finalParams,
-            paramKeys: Object.keys(finalParams).filter((key) => !['model', 'messages', 'system'].includes(key)),
-            tokenParams,
-            finalParams: Object.fromEntries(
-              Object.entries(finalParams).filter(([key]) => !['model', 'messages', 'system'].includes(key)),
-            ),
-          },
-          null,
-          2,
-        ),
-      );
-
       const result = await generateText(finalParams);
       logger.info(`Generated response`);
 
@@ -254,8 +234,8 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
         return toApiErrorResponse(toTokenLimitError(providerName));
       }
 
-      if (error instanceof Error && error.message.includes('API key')) {
-        return toApiErrorResponse(toMissingCredentialError(providerName, error.message));
+      if (isCredentialFailure(error)) {
+        return toApiErrorResponse(toMissingCredentialError(providerName, error));
       }
 
       return toApiErrorResponse(error, providerName);

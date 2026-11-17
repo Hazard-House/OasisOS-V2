@@ -60,6 +60,19 @@ describe('toSafeStreamErrorMessage', () => {
     );
   });
 
+  it('treats an OpenRouter 401 user-not-found response as a bad key and hides the diagnostic', () => {
+    const error = Object.assign(new Error('User not found.'), {
+      statusCode: 401,
+      responseHeaders: { authorization: 'secret-value' },
+    });
+
+    const responseMessage = toSafeStreamErrorMessage(error, { provider: 'OpenRouter', model: 'openai/gpt-4o-mini' });
+
+    expect(responseMessage).toContain('Invalid or missing API key');
+    expect(responseMessage).not.toContain('secret-value');
+    expect(responseMessage).not.toContain('authorization');
+  });
+
   it('returns a generic message instead of an unknown provider diagnostic', () => {
     const diagnostic = 'Request https://provider.example/?api_key=secret-value failed';
     const responseMessage = toSafeStreamErrorMessage(new Error(diagnostic));
