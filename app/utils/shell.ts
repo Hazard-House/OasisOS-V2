@@ -348,7 +348,7 @@ export class BoltShell {
       }
 
       recordTerminalCommand({
-        terminalName: 'Bolt Terminal',
+        terminalName: 'OasisOS Terminal',
         command,
         output: resp.output,
         exitCode: resp.exitCode,

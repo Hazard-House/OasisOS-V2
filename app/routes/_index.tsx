@@ -5,10 +5,9 @@ import { Chat } from '~/components/chat/Chat.client';
 import { Header } from '~/components/header/Header';
 import { FirstRunOnboarding } from '~/components/onboarding/FirstRunOnboarding';
 import BackgroundRays from '~/components/ui/BackgroundRays';
+import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'OasisOS' }, { name: 'description', content: 'OasisOS builds web apps in the browser.' }];
-};
+export const meta: MetaFunction = () => oasisMeta();
 
 export const loader = () => Response.json({});
 

@@ -4,8 +4,9 @@ import { StarterTemplateImport } from '~/components/chat/StarterTemplateImport.c
 import { Header } from '~/components/header/Header';
 import BackgroundRays from '~/components/ui/BackgroundRays';
 import { LoadingOverlay } from '~/components/ui/LoadingOverlay';
+import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => [{ title: 'Start a blank app | OasisOS' }];
+export const meta: MetaFunction = () => oasisMeta('Start a blank app | OasisOS');
 
 export default function Starter() {
   return (

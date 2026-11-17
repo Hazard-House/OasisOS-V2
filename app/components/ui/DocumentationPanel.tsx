@@ -29,7 +29,7 @@ export function DocumentationPanel({ open, onClose }: DocumentationPanelProps) {
             </Dialog.Close>
           </header>
           <div className="flex flex-1 flex-col gap-4 px-7 py-8 text-sm leading-6 text-bolt-elements-textSecondary">
-            <p>OasisOS builds web apps in the browser.</p>
+            <Dialog.Description>OasisOS builds web apps in the browser.</Dialog.Description>
             <p>You need an AI provider key before a prompt can write code.</p>
             <p>Add one under Settings, then pick a model in the composer.</p>
             <p className="text-xs text-bolt-elements-textTertiary">Based on bolt.diy.</p>

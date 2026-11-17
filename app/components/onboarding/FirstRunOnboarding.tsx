@@ -219,7 +219,7 @@ export function FirstRunOnboarding() {
       }}
     >
       <Dialog
-        backdropClassName="!bg-[#04101c]/80 !backdrop-blur-md bg-[radial-gradient(ellipse_at_top,_rgba(91,33,182,0.18),_transparent_55%)]"
+        backdropClassName="!bg-[#04101c]/80 !backdrop-blur-md bg-[radial-gradient(ellipse_at_top,_rgba(252,209,15,0.18),_transparent_55%)]"
         className="w-[min(560px,calc(100vw-2rem))] max-h-[90vh] overflow-y-auto !rounded-xl !border-[#302e39] !bg-[#092b49] p-6 !text-[#f4f1fa]"
         showCloseButton={false}
       >
@@ -438,7 +438,7 @@ export function FirstRunOnboarding() {
                     type="button"
                     aria-pressed={interfaceOptions.cornerRadius === radius}
                     onClick={() => setInterfaceOptions({ ...interfaceOptions, cornerRadius: radius })}
-                    className={`appearance-none rounded-md px-2 py-1 text-xs capitalize ${interfaceOptions.cornerRadius === radius ? 'bg-[#fcd10f] text-white' : 'bg-[#302e39] text-[#b8b3c2]'}`}
+                    className={`appearance-none rounded-md px-2 py-1 text-xs capitalize ${interfaceOptions.cornerRadius === radius ? 'bg-[#fcd10f] text-[#092b49]' : 'bg-[#302e39] text-[#b8b3c2]'}`}
                   >
                     {radius}
                   </button>
@@ -486,7 +486,7 @@ export function FirstRunOnboarding() {
               type="button"
               disabled={saving}
               onClick={() => void next()}
-              className="rounded-md bg-[#fcd10f] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a6bff] disabled:opacity-60"
+              className="rounded-md bg-[#fcd10f] px-4 py-2 text-sm font-medium text-[#092b49] hover:bg-[#ffe56a] disabled:opacity-60"
             >
               {saving ? 'Saving…' : step === 3 ? 'Finish setup' : 'Continue'}
             </button>

@@ -1,14 +1,12 @@
-import type { LoaderFunctionArgs } from 'react-router';
-import type { MetaFunction } from 'react-router';
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { ClientOnly } from 'remix-utils/client-only';
 import { BaseChat } from '~/components/chat/BaseChat';
 import { GitUrlImport } from '~/components/git/GitUrlImport.client';
 import { Header } from '~/components/header/Header';
 import BackgroundRays from '~/components/ui/BackgroundRays';
+import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'OasisOS' }, { name: 'description', content: 'OasisOS builds web apps in the browser.' }];
-};
+export const meta: MetaFunction = () => oasisMeta();
 
 export async function loader(args: LoaderFunctionArgs) {
   return Response.json({ url: args.params.url });

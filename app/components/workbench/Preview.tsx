@@ -453,6 +453,20 @@ export const Preview = memo(({ selectedElement, setSelectedElement }: PreviewPro
               <meta charset="utf-8">
               <title>${size.name} Preview</title>
               <style>
+                @font-face {
+                  font-family: Inter;
+                  font-style: normal;
+                  font-weight: 400;
+                  font-display: swap;
+                  src: url('${window.location.origin}/fonts/inter/inter-400.woff2') format('woff2');
+                }
+                @font-face {
+                  font-family: Inter;
+                  font-style: normal;
+                  font-weight: 600;
+                  font-display: swap;
+                  src: url('${window.location.origin}/fonts/inter/inter-600.woff2') format('woff2');
+                }
                 body {
                   margin: 0;
                   padding: 0;

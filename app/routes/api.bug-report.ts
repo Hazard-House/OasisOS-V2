@@ -197,9 +197,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
       (context?.cloudflare?.env as any)?.GITHUB_BUG_REPORT_TOKEN || process.env.GITHUB_BUG_REPORT_TOKEN;
 
     const targetRepo = (context?.cloudflare?.env as any)?.BUG_REPORT_REPO || process.env.BUG_REPORT_REPO;
+    const repoParts = typeof targetRepo === 'string' ? targetRepo.split('/') : [];
+    const owner = repoParts.length === 2 ? repoParts[0] : '';
+    const repo = repoParts.length === 2 ? repoParts[1] : '';
 
-    if (!githubToken || !targetRepo) {
-      console.error('GitHub bug report token not configured');
+    if (!githubToken || !owner || !repo) {
+      console.error('Bug reporting needs GITHUB_BUG_REPORT_TOKEN and BUG_REPORT_REPO as owner/repo');
       return Response.json(
         { error: 'Bug reporting is not properly configured. Please contact the administrators.' },
         { status: 500 },
@@ -211,9 +214,6 @@ export async function action({ request, context }: ActionFunctionArgs) {
       auth: githubToken,
       userAgent: 'OasisOS',
     });
-
-    // Create GitHub issue
-    const [owner, repo] = targetRepo.split('/');
 
     const issue = await octokit.rest.issues.create({
       owner,

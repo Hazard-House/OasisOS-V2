@@ -17,22 +17,7 @@ const toastAnimation = cssTransition({
   exit: 'animated fadeOutRight',
 });
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: 'OasisOS' },
-    { name: 'description', content: 'OasisOS builds web apps in the browser.' },
-    { name: 'application-name', content: 'OasisOS' },
-    { name: 'theme-color', content: '#092b49' },
-    { property: 'og:title', content: 'OasisOS' },
-    { property: 'og:description', content: 'OasisOS builds web apps in the browser.' },
-    { property: 'og:image', content: '/brand/og-image.png' },
-    { property: 'og:type', content: 'website' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: 'OasisOS' },
-    { name: 'twitter:description', content: 'OasisOS builds web apps in the browser.' },
-    { name: 'twitter:image', content: '/brand/og-image.png' },
-  ];
-};
+export const meta: MetaFunction = () => oasisMeta();
 
 export const links: LinksFunction = () => [
   {
@@ -176,6 +161,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 import { PerformanceMonitor } from './components/debug/PerformanceMonitor';
+import { oasisMeta } from './lib/oasisMeta';
 import { journeys, observeWebVitals } from './lib/performance/metrics';
 import { prebootWebContainer } from './lib/performance/webcontainer-optimizer';
 import { logStore } from './lib/stores/logs';

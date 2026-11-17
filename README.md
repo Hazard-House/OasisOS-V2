@@ -11,6 +11,7 @@ You need Node.js >= 22.12.0 and pnpm >= 9.15.9.
 ```bash
 pnpm install
 cp .env.example .env.local
+# Replace the placeholder for the provider you use. Remove or comment out the rest.
 pnpm run dev
 ```
 
@@ -34,7 +35,7 @@ WebContainers need a Chromium browser (Chrome, Edge, or another Chromium-based b
 
 ## Env vars
 
-The app starts with none of these set. Building an app needs one provider key for a provider you turn on. OpenRouter, Anthropic, OpenAI, and Google are enabled by default.
+The app starts with none of these set. Building an app needs one provider key. Providers stay off until you pick one during setup or turn one on in Settings.
 
 | Variable | Required to build | What it is |
 | --- | --- | --- |
@@ -47,7 +48,8 @@ The app starts with none of these set. Building an app needs one provider key fo
 | `MISTRAL_API_KEY` | Optional provider | Mistral |
 | `XAI_API_KEY` | Optional provider | xAI |
 | `COHERE_API_KEY` | Optional provider | Cohere |
-| `TOGETHER_API_KEY` | Optional provider | Together |
+| `TOGETHER_API_KEY` | Optional provider | Together API key. Also set `TOGETHER_API_BASE_URL`, for example `https://api.together.xyz/v1` |
+| `TOGETHER_API_BASE_URL` | Required with Together | Together base URL, for example `https://api.together.xyz/v1` |
 | `FIREWORKS_API_KEY` | Optional provider | Fireworks |
 | `CEREBRAS_API_KEY` | Optional provider | Cerebras |
 | `PERPLEXITY_API_KEY` | Optional provider | Perplexity |
