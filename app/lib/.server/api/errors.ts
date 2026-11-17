@@ -139,7 +139,8 @@ export function providerErrorDetails(error: unknown): { statusCode?: number; mes
   const message = raw
     .replace(/https?:\/\/\S+/gi, '[url]')
     .replace(/\b(?:bearer\s+)?(?:sk|rk|pk|ak)-[a-z0-9_-]{6,}\b/gi, '[redacted]')
-    .replace(/(?:api[_-]?key|token|authorization)\s*[:=]\s*\S+/gi, '[redacted]')
+    .replace(/(?:api[_-]?key|token|authorization)\s*[:=]\s*(?:bearer\s+)?\S+/gi, '[redacted]')
+    .replace(/\bbearer\s+\S+/gi, '[redacted]')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 300);

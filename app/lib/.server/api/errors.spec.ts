@@ -4,6 +4,7 @@ import {
   toApiErrorResponse,
   ApiError,
   isTokenLimitFailure,
+  providerErrorDetails,
   toMissingCredentialError,
   toSafeStreamErrorMessage,
   toSafeTextStream,
@@ -60,17 +61,22 @@ describe('toSafeStreamErrorMessage', () => {
     );
   });
 
-  it('treats an OpenRouter 401 user-not-found response as a bad key and hides the diagnostic', () => {
-    const error = Object.assign(new Error('User not found.'), {
-      statusCode: 401,
-      responseHeaders: { authorization: 'secret-value' },
-    });
+  it('treats a user-not-found message as a bad key without relying on status', () => {
+    expect(toSafeStreamErrorMessage(new Error('User not found.'))).toContain('Invalid or missing API key');
+  });
 
-    const responseMessage = toSafeStreamErrorMessage(error);
+  it('treats status 401 as a bad key even when the message does not mention credentials', () => {
+    const error = Object.assign(new Error('Request rejected.'), { statusCode: 401 });
 
-    expect(responseMessage).toContain('Invalid or missing API key');
-    expect(responseMessage).not.toContain('secret-value');
-    expect(responseMessage).not.toContain('authorization');
+    expect(toSafeStreamErrorMessage(error)).toContain('Invalid or missing API key');
+  });
+
+  it('redacts a bearer token that follows an authorization label', () => {
+    const { message } = providerErrorDetails(new Error('authorization: Bearer secret-value'));
+
+    expect(message).toBe('[redacted]');
+    expect(message).not.toContain('secret-value');
+    expect(message).not.toContain('Bearer');
   });
 
   it('returns a generic message instead of an unknown provider diagnostic', () => {
