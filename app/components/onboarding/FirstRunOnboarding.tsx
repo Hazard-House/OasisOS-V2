@@ -328,8 +328,7 @@ export function FirstRunOnboarding() {
         {step === 1 && (
           <div className="space-y-3">
             <p className="text-sm text-[#a09baa]">
-              Choose a provider and add its API key to start building. You can skip this and enable providers later in
-              Settings, then add their keys from the prompt box.
+              Choose a provider and add its API key to start building. You can skip this and add keys later in Settings.
             </p>
             <label className="block text-sm font-medium" htmlFor="onboarding-provider">
               AI provider
