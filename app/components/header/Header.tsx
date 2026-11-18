@@ -1,7 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { ClientOnly } from 'remix-utils/client-only';
 import { HeaderActionButtons } from './HeaderActionButtons.client';
-import { OasisMark } from '~/components/ui/OasisMark';
 import { ChatDescription } from '~/lib/persistence/ChatDescription.client';
 import { chatStore } from '~/lib/stores/chat';
 import { classNames } from '~/utils/classNames';
@@ -16,12 +15,8 @@ export function Header() {
         'border-bolt-elements-borderColor': chat.started,
       })}
     >
-      <div className="flex items-center gap-2 z-logo text-bolt-elements-textPrimary cursor-pointer">
+      <div className="flex items-center gap-2 z-logo text-bolt-elements-textPrimary">
         <div className="i-ph:sidebar-simple-duotone text-xl" />
-        <a href="/" className="flex items-center gap-2 text-[#092b49] dark:text-[#fcd10f]">
-          <OasisMark className="h-8 w-8" />
-          <span className="text-xl font-semibold tracking-tight">OasisOS</span>
-        </a>
       </div>
       {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.
         <>
