@@ -413,7 +413,7 @@ export function GitHubDeploymentDialog({ isOpen, onClose, projectName, files }: 
         const { data: commitData } = await octokit.git.createCommit({
           owner: connection.user.login,
           repo: sanitizedRepoName,
-          message: !repoExists ? 'Initial commit from Bolt.diy' : 'Update from Bolt.diy',
+          message: !repoExists ? 'Initial commit from OasisOS' : 'Update from OasisOS',
           tree: treeData.sha,
           parents: parentCommitSha ? [parentCommitSha] : [], // Use parent if available
         });
@@ -880,7 +880,7 @@ export function GitHubDeploymentDialog({ isOpen, onClose, projectName, files }: 
                     {repoName && sanitizeRepoName(repoName) !== repoName && (
                       <p className="text-xs text-bolt-elements-textSecondary dark:text-bolt-elements-textSecondary-dark mt-1">
                         Will be created as:{' '}
-                        <span className="font-mono text-purple-600 dark:text-purple-400">
+                        <span className="font-mono text-purple-600 dark:text-[#fcd10f]">
                           {sanitizeRepoName(repoName)}
                         </span>
                       </p>

@@ -1,7 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { Bug, ExternalLink, X } from 'lucide-react';
-
-const BUG_REPORT_URL = 'https://github.com/stackblitz-labs/bolt.diy/issues/new?template=bug_report.yml';
+import { Bug, X } from 'lucide-react';
 
 interface ReportBugPanelProps {
   open: boolean;
@@ -22,7 +20,7 @@ export function ReportBugPanel({ open, onClose }: ReportBugPanelProps) {
               <div className="min-w-0">
                 <Dialog.Title className="truncate text-sm font-semibold">Report a bug</Dialog.Title>
                 <Dialog.Description className="truncate text-xs text-bolt-elements-textSecondary">
-                  Help us improve bolt.diy
+                  Tell your team what broke.
                 </Dialog.Description>
               </div>
             </div>
@@ -31,7 +29,7 @@ export function ReportBugPanel({ open, onClose }: ReportBugPanelProps) {
               <button
                 type="button"
                 aria-label="Close bug report"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-bolt-elements-textSecondary transition-colors hover:bg-bolt-elements-background-depth-2 hover:text-bolt-elements-textPrimary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-bolt-elements-textSecondary transition-colors hover:bg-bolt-elements-background-depth-2 hover:text-bolt-elements-textPrimary"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -39,20 +37,10 @@ export function ReportBugPanel({ open, onClose }: ReportBugPanelProps) {
           </header>
 
           <div className="flex flex-1 flex-col items-start justify-center px-8 py-12 sm:px-14">
-            <p className="mb-2 text-lg font-semibold">Found something that isn’t working?</p>
-            <p className="mb-6 max-w-lg text-sm leading-6 text-bolt-elements-textSecondary">
-              Bug reports are submitted through GitHub. Continue there to describe the problem and send it to the
-              bolt.diy team.
+            <p className="mb-2 text-lg font-semibold">Found something that is not working?</p>
+            <p className="max-w-lg text-sm leading-6 text-bolt-elements-textSecondary">
+              This build does not send reports to an outside site. Share the details with the person who runs OasisOS.
             </p>
-            <a
-              href={BUG_REPORT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-2 px-4 py-2.5 text-sm font-medium text-bolt-elements-textPrimary transition-colors hover:bg-bolt-elements-background-depth-3"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Continue to GitHub
-            </a>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

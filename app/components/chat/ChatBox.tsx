@@ -1,8 +1,6 @@
 import { useStore } from '@nanostores/react';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import React from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
-import { APIKeyManager } from './APIKeyManager';
 import { AttachmentMenu } from './AttachmentMenu';
 import styles from './BaseChat.module.scss';
 import FilePreview from './FilePreview';
@@ -15,14 +13,12 @@ import { ToolAccessMenu } from './ToolAccessMenu';
 import { ModelSelector } from '~/components/chat/ModelSelector';
 import { SpeechRecognitionButton } from '~/components/chat/SpeechRecognition';
 import { ColorSchemeDialog } from '~/components/ui/ColorSchemeDialog';
-import { IconButton } from '~/components/ui/IconButton';
 import { ExpoQrModal } from '~/components/workbench/ExpoQrModal';
 import type { ElementInfo } from '~/components/workbench/Inspector';
 import { isGitHubConnected } from '~/lib/stores/githubConnection';
 import { isGitLabConnected } from '~/lib/stores/gitlabConnection';
 import { useMCPStore, type ConnectorId } from '~/lib/stores/mcp';
 import { netlifyConnection } from '~/lib/stores/netlify';
-import { LOCAL_PROVIDERS } from '~/lib/stores/settings';
 import { supabaseConnection } from '~/lib/stores/supabase';
 import { terminalContextAttachments } from '~/lib/stores/terminalContext';
 import { vercelConnection } from '~/lib/stores/vercel';
@@ -201,7 +197,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
       <div>
         <ClientOnly>
           {() => (
-            <div className={props.isModelSettingsCollapsed ? 'hidden' : ''}>
+            <div>
               <ModelSelector
                 key={props.provider?.name}
                 model={props.model}
@@ -213,17 +209,6 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                 apiKeys={props.apiKeys}
                 modelLoading={props.isModelLoading}
               />
-              {(props.providerList || []).length > 0 &&
-                props.provider &&
-                !LOCAL_PROVIDERS.includes(props.provider.name) && (
-                  <APIKeyManager
-                    provider={props.provider}
-                    apiKey={props.apiKeys[props.provider.name] || ''}
-                    setApiKey={(key) => {
-                      props.onApiKeysChange(props.provider.name, key);
-                    }}
-                  />
-                )}
             </div>
           )}
         </ClientOnly>
@@ -333,7 +318,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             minHeight: props.TEXTAREA_MIN_HEIGHT,
             maxHeight: props.TEXTAREA_MAX_HEIGHT,
           }}
-          placeholder={props.chatMode === 'build' ? 'How can Bolt help you today?' : 'What would you like to discuss?'}
+          placeholder={
+            props.chatMode === 'build' ? 'How can OasisOS help you today?' : 'What would you like to discuss?'
+          }
           translate="no"
         />
         <ClientOnly>
@@ -401,109 +388,6 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
               <SupabaseConnection />
             </div>
             <McpTools open={isMcpToolsOpen} onOpenChange={setIsMcpToolsOpen} />
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <button
-                  type="button"
-                  title={props.chatMode === 'discuss' ? 'Discuss Mode' : 'Agent Mode'}
-                  className={classNames(
-                    'transition-all flex items-center gap-1 rounded-md px-1.5 py-1 text-xs',
-                    props.chatMode === 'discuss'
-                      ? 'bg-bolt-elements-item-backgroundAccent text-bolt-elements-item-contentAccent'
-                      : props.agentMode
-                        ? 'bg-bolt-elements-item-backgroundAccent text-bolt-elements-item-contentAccent'
-                        : 'bg-bolt-elements-item-backgroundDefault text-bolt-elements-item-contentDefault hover:bg-bolt-elements-item-backgroundActive',
-                  )}
-                >
-                  {props.chatMode === 'discuss' ? (
-                    <>
-                      <div className="i-ph:chats text-lg" />
-                      <span>Discuss</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="i-ph:robot text-lg" />
-                      <span>Agent</span>
-                    </>
-                  )}
-                  <div className="i-ph:caret-down text-sm" />
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  className={classNames(
-                    'min-w-[160px] rounded-lg p-1',
-                    'bg-bolt-elements-background-depth-2',
-                    'border border-bolt-elements-borderColor',
-                    'shadow-lg',
-                    'z-50',
-                  )}
-                  sideOffset={5}
-                  align="start"
-                >
-                  <DropdownMenu.Item
-                    className={classNames(
-                      'flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer',
-                      'text-bolt-elements-textPrimary',
-                      'hover:bg-bolt-elements-item-backgroundActive',
-                      'focus:outline-none',
-                      props.chatMode === 'build' && props.agentMode && 'bg-bolt-elements-item-backgroundAccent',
-                    )}
-                    onSelect={() => {
-                      props.setChatMode?.('build');
-                      props.setAgentMode?.(true);
-                    }}
-                  >
-                    <div className="i-ph:robot text-lg" />
-                    <div className="flex flex-col">
-                      <span>Agent</span>
-                      <span className="text-xs text-bolt-elements-textSecondary">Plans & uses tools</span>
-                    </div>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item
-                    disabled={!props.chatStarted}
-                    className={classNames(
-                      'flex items-center gap-2 px-3 py-2 rounded-md text-sm',
-                      props.chatStarted
-                        ? 'text-bolt-elements-textPrimary hover:bg-bolt-elements-item-backgroundActive cursor-pointer'
-                        : 'text-bolt-elements-textTertiary opacity-50 cursor-not-allowed',
-                      'focus:outline-none',
-                      props.chatMode === 'discuss' && 'bg-bolt-elements-item-backgroundAccent',
-                    )}
-                    onSelect={() => {
-                      props.setChatMode?.('discuss');
-                      props.setAgentMode?.(false);
-                    }}
-                  >
-                    <div className="i-ph:chats text-lg" />
-                    <div className="flex flex-col">
-                      <span>Discuss</span>
-                      <span className="text-xs text-bolt-elements-textSecondary">Chat without tools</span>
-                    </div>
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-            <IconButton
-              title="Model Settings"
-              className={classNames('transition-all flex items-center gap-1', {
-                'bg-bolt-elements-item-backgroundAccent text-bolt-elements-item-contentAccent':
-                  props.isModelSettingsCollapsed,
-                'bg-bolt-elements-item-backgroundDefault text-bolt-elements-item-contentDefault':
-                  !props.isModelSettingsCollapsed,
-              })}
-              onClick={() => props.setIsModelSettingsCollapsed(!props.isModelSettingsCollapsed)}
-              disabled={!props.providerList || props.providerList.length === 0}
-            >
-              {props.isModelSettingsCollapsed ? (
-                <span className="text-xs" title={props.model}>
-                  {props.model && props.model.length > 25 ? `${props.model.slice(0, 22)}...` : props.model}
-                </span>
-              ) : (
-                <span className="text-xs">Model Settings</span>
-              )}
-              <div className={`i-ph:caret-${props.isModelSettingsCollapsed ? 'right' : 'down'} text-lg`} />
-            </IconButton>
           </div>
           <ExpoQrModal open={props.qrModalOpen} onClose={() => props.setQrModalOpen(false)} />
         </div>

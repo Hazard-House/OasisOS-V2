@@ -4,6 +4,7 @@ import {
   toApiErrorResponse,
   ApiError,
   isTokenLimitFailure,
+  providerErrorDetails,
   toMissingCredentialError,
   toSafeStreamErrorMessage,
   toSafeTextStream,
@@ -58,6 +59,31 @@ describe('toSafeStreamErrorMessage', () => {
     expect(toSafeStreamErrorMessage(new Error('Rate limit exceeded: free-models-per-day'))).toContain(
       'API rate limit exceeded',
     );
+  });
+
+  it('treats a user-not-found message as a bad key without relying on status', () => {
+    expect(toSafeStreamErrorMessage(new Error('User not found.'))).toContain('Invalid or missing API key');
+  });
+
+  it('treats status 401 as a bad key even when the message does not mention credentials', () => {
+    const error = Object.assign(new Error('Request rejected.'), { statusCode: 401 });
+
+    expect(toSafeStreamErrorMessage(error)).toContain('Invalid or missing API key');
+  });
+
+  it('still treats bearer authentication wording as a bad key', () => {
+    const error = new Error('Bearer authentication failed');
+
+    expect(toSafeStreamErrorMessage(error)).toContain('Invalid or missing API key');
+    expect(providerErrorDetails(error).message.toLowerCase()).toContain('authentication');
+  });
+
+  it('redacts a bearer token that follows an authorization label', () => {
+    const { message } = providerErrorDetails(new Error('authorization: Bearer secret-value'));
+
+    expect(message).toBe('[redacted]');
+    expect(message).not.toContain('secret-value');
+    expect(message).not.toContain('Bearer');
   });
 
   it('returns a generic message instead of an unknown provider diagnostic', () => {

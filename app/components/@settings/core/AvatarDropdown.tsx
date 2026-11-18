@@ -79,14 +79,14 @@ export const AvatarDropdown = ({ onSelectTab, onOpenDocs }: AvatarDropdownProps)
               'flex items-center gap-2 px-4 py-2.5',
               'text-sm text-gray-700 dark:text-gray-200',
               'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'hover:text-purple-500 dark:hover:text-[#fcd10f]',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
             )}
             onClick={() => onSelectTab('profile')}
           >
-            <div className="i-ph:user-circle w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:user-circle w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-[#fcd10f] transition-colors" />
             Edit Profile
           </DropdownMenu.Item>
 
@@ -95,14 +95,14 @@ export const AvatarDropdown = ({ onSelectTab, onOpenDocs }: AvatarDropdownProps)
               'flex items-center gap-2 px-4 py-2.5',
               'text-sm text-gray-700 dark:text-gray-200',
               'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'hover:text-purple-500 dark:hover:text-[#fcd10f]',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
             )}
             onClick={() => onSelectTab('settings')}
           >
-            <div className="i-ph:gear-six w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:gear-six w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-[#fcd10f] transition-colors" />
             Settings
           </DropdownMenu.Item>
 
@@ -113,25 +113,7 @@ export const AvatarDropdown = ({ onSelectTab, onOpenDocs }: AvatarDropdownProps)
               'flex items-center gap-2 px-4 py-2.5',
               'text-sm text-gray-700 dark:text-gray-200',
               'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
-              'cursor-pointer transition-all duration-200',
-              'outline-none',
-              'group',
-            )}
-            onClick={() =>
-              window.open('https://github.com/stackblitz-labs/bolt.diy/issues/new?template=bug_report.yml', '_blank')
-            }
-          >
-            <div className="i-ph:bug w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
-            Report Bug
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Item
-            className={classNames(
-              'flex items-center gap-2 px-4 py-2.5',
-              'text-sm text-gray-700 dark:text-gray-200',
-              'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'hover:text-purple-500 dark:hover:text-[#fcd10f]',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
@@ -145,7 +127,7 @@ export const AvatarDropdown = ({ onSelectTab, onOpenDocs }: AvatarDropdownProps)
               }
             }}
           >
-            <div className="i-ph:download w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:download w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-[#fcd10f] transition-colors" />
             Download Debug Log
           </DropdownMenu.Item>
 
@@ -154,14 +136,14 @@ export const AvatarDropdown = ({ onSelectTab, onOpenDocs }: AvatarDropdownProps)
               'flex items-center gap-2 px-4 py-2.5',
               'text-sm text-gray-700 dark:text-gray-200',
               'hover:bg-purple-50 dark:hover:bg-purple-500/10',
-              'hover:text-purple-500 dark:hover:text-purple-400',
+              'hover:text-purple-500 dark:hover:text-[#fcd10f]',
               'cursor-pointer transition-all duration-200',
               'outline-none',
               'group',
             )}
             onClick={onOpenDocs}
           >
-            <div className="i-ph:question w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="i-ph:question w-4 h-4 text-gray-400 group-hover:text-purple-500 dark:group-hover:text-[#fcd10f] transition-colors" />
             Help & Documentation
           </DropdownMenu.Item>
         </DropdownMenu.Content>

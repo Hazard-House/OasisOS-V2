@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import type { IconType } from 'react-icons';
 import { BiCodeBlock, BiChip } from 'react-icons/bi';
 import { BsRobot, BsCloud } from 'react-icons/bs';
@@ -7,7 +7,10 @@ import { FaCloud, FaBrain } from 'react-icons/fa';
 import { SiGoogle, SiGithub, SiHuggingface, SiPerplexity } from 'react-icons/si';
 import { TbBrain, TbCloudComputing } from 'react-icons/tb';
 import { toast } from 'react-toastify';
+import { getApiKeysFromCookies } from '~/components/chat/APIKeyManager';
 import { Switch } from '~/components/ui/Switch';
+import { API_KEYS_UPDATED_EVENT, type ApiKeysUpdatedDetail } from '~/lib/api/apiKeys';
+import { setSecureCookie } from '~/lib/api/secure-cookies';
 import { useSettings } from '~/lib/hooks/useSettings';
 import { logStore } from '~/lib/stores/logs';
 import { URL_CONFIGURABLE_PROVIDERS } from '~/lib/stores/settings';
@@ -58,6 +61,97 @@ const PROVIDER_DESCRIPTIONS: Partial<Record<ProviderName, string>> = {
   Github: 'Use OpenAI models hosted through GitHub infrastructure',
   OpenAI: 'Use GPT-4, GPT-3.5, and other OpenAI models',
 };
+
+function ProviderKeyField({ providerName }: { providerName: string }) {
+  const [value, setValue] = useState('');
+  const [envSet, setEnvSet] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const envRequest = useRef(0);
+
+  const loadServerKeyStatus = useCallback(() => {
+    const requestId = envRequest.current + 1;
+    envRequest.current = requestId;
+
+    fetch(`/api/check-env-key?provider=${encodeURIComponent(providerName)}`)
+      .then((response) => response.json())
+      .then((data: unknown) => {
+        const isSet = typeof data === 'object' && data !== null && 'isSet' in data && Boolean(data.isSet);
+
+        if (envRequest.current === requestId) {
+          setEnvSet(isSet);
+        }
+      })
+      .catch(() => {
+        if (envRequest.current === requestId) {
+          setEnvSet(false);
+        }
+      });
+  }, [providerName]);
+
+  useEffect(() => {
+    const current = getApiKeysFromCookies()[providerName] || '';
+    setValue(current);
+    setSaved(Boolean(current));
+    loadServerKeyStatus();
+  }, [providerName, loadServerKeyStatus]);
+
+  const save = () => {
+    const apiKeys = { ...getApiKeysFromCookies() };
+    const next = value.trim();
+
+    if (next) {
+      apiKeys[providerName] = next;
+    } else {
+      delete apiKeys[providerName];
+    }
+
+    setSecureCookie('apiKeys', JSON.stringify(apiKeys), { expires: 365 });
+    window.dispatchEvent(
+      new CustomEvent<ApiKeysUpdatedDetail>(API_KEYS_UPDATED_EVENT, { detail: { apiKeys, providerName } }),
+    );
+    setSaved(Boolean(next));
+    loadServerKeyStatus();
+    toast.success(next ? `${providerName} key saved in this browser` : `${providerName} browser key removed`);
+  };
+
+  return (
+    <div className="mt-3 space-y-2">
+      <label className="text-xs text-bolt-elements-textSecondary" htmlFor={`provider-key-${providerName}`}>
+        API key
+      </label>
+      <div className="flex gap-2">
+        <input
+          id={`provider-key-${providerName}`}
+          type="password"
+          autoComplete="new-password"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder="Paste a key for this browser"
+          className={classNames(
+            'min-w-0 flex-1 px-3 py-1.5 rounded-lg text-sm',
+            'bg-bolt-elements-background-depth-3 border border-bolt-elements-borderColor',
+            'text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary',
+            'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+          )}
+        />
+        <button
+          type="button"
+          onClick={save}
+          className="shrink-0 rounded-lg bg-[#fcd10f] px-3 py-1.5 text-sm font-medium text-[#092b49]"
+        >
+          Save
+        </button>
+      </div>
+      <p className="text-xs text-bolt-elements-textTertiary">
+        {saved
+          ? 'Saved in this browser.'
+          : envSet
+            ? 'A server key is already set. A key saved here is used instead.'
+            : 'No key is saved in this browser.'}
+      </p>
+    </div>
+  );
+}
 
 const CloudProvidersTab = () => {
   const settings = useSettings();
@@ -283,6 +377,9 @@ const CloudProvidersTab = () => {
                         </div>
                       )}
                     </motion.div>
+                  )}
+                  {provider.settings.enabled && providerBaseUrlEnvKeys[provider.name]?.apiTokenKey && (
+                    <ProviderKeyField providerName={provider.name} />
                   )}
                 </div>
               </div>

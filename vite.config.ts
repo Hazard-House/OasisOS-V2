@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 import UnoCSS from 'unocss/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
+import { previewAllowedHosts } from './scripts/allowed-hosts.mjs';
 import { browserPolyfills } from './scripts/vite/browser-polyfills.ts';
 
 const ReactCompilerConfig = {
@@ -19,6 +20,8 @@ process.env.CLOUDFLARE_CF_FETCH_ENABLED ??= 'false';
 // Load environment variables without duplicate loading or console noise
 dotenv.config({ path: ['.env.local', '.env'], quiet: true });
 
+const allowedHosts = previewAllowedHosts();
+
 export default defineConfig((config) => {
   return {
     define: {
@@ -28,6 +31,7 @@ export default defineConfig((config) => {
       'process.cwd': '() => "/"',
     },
     server: {
+      allowedHosts,
       // Warm up frequently used dependencies
       warmup: {
         clientFiles: [
@@ -41,6 +45,9 @@ export default defineConfig((config) => {
       hmr: {
         overlay: true,
       },
+    },
+    preview: {
+      allowedHosts,
     },
     resolve: {
       tsconfigPaths: true,

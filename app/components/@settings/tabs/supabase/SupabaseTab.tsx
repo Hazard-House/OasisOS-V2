@@ -1013,7 +1013,7 @@ export default function SupabaseTab() {
                             icon: 'i-ph:code',
                             color: 'text-purple-500',
                             bgColor: 'bg-purple-100 dark:bg-purple-900/20',
-                            textColor: 'text-purple-800 dark:text-purple-400',
+                            textColor: 'text-purple-800 dark:text-[#fcd10f]',
                           },
                           {
                             label: 'Tables',

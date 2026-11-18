@@ -219,7 +219,7 @@ function getAllowedOrigin(request: Request): string | undefined {
     return origin;
   }
 
-  const configuredOrigins = [process.env.VITE_PUBLIC_APP_URL, 'https://bolt.diy', 'https://www.bolt.diy'];
+  const configuredOrigins = [process.env.VITE_PUBLIC_APP_URL];
 
   if (process.env.NODE_ENV === 'development') {
     configuredOrigins.push('http://localhost:5173', 'http://127.0.0.1:5173');

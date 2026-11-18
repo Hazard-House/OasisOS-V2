@@ -92,7 +92,7 @@ const NotificationsTab = () => {
     if (type === 'update') {
       return {
         icon: 'i-ph:arrow-circle-up',
-        color: 'text-purple-500 dark:text-purple-400',
+        color: 'text-purple-500 dark:text-[#fcd10f]',
         bg: 'hover:bg-purple-500/10 dark:hover:bg-purple-500/20',
       };
     }

@@ -1,7 +1,6 @@
 import type { LoaderFunction } from 'react-router';
 
 import { LLMManager } from '~/lib/modules/llm/manager';
-import { LOCAL_PROVIDERS } from '~/lib/stores/settings';
 
 interface ConfiguredProvider {
   name: string;
@@ -9,84 +8,58 @@ interface ConfiguredProvider {
   configMethod: 'environment' | 'none';
 }
 
+function readServerValue(env: Record<string, unknown> | undefined, managerEnv: Record<string, string>, key: string) {
+  return env?.[key] || process.env[key] || managerEnv[key];
+}
+
+function isRealSecret(value: unknown) {
+  return typeof value === 'string' && value.trim().length > 10 && !value.includes('your_') && !value.includes('_here');
+}
+
+function isRealBaseUrl(value: unknown) {
+  if (typeof value !== 'string' || value.includes('your_') || value.includes('_here')) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value.trim());
+
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 /**
- * API endpoint that detects which providers are configured via environment variables
- * This helps auto-enable providers that have been set up by the user
+ * Reports which providers have a server-side key or base URL.
+ * The response never includes the secret itself.
  */
 export const loader: LoaderFunction = async ({ context }) => {
   try {
-    const llmManager = LLMManager.getInstance(context?.cloudflare?.env as any);
+    const serverEnv = context?.cloudflare?.env as unknown as Record<string, unknown> | undefined;
+    const llmManager = LLMManager.getInstance(serverEnv as Record<string, string> | undefined);
     const configuredProviders: ConfiguredProvider[] = [];
 
-    // Check each local provider for environment configuration
-    for (const providerName of LOCAL_PROVIDERS) {
-      const providerInstance = llmManager.getProvider(providerName);
+    for (const providerInstance of llmManager.getAllProviders()) {
+      const config = providerInstance.config;
 
-      let isConfigured = false;
-      let configMethod: 'environment' | 'none' = 'none';
+      const baseUrlValue = config.baseUrlKey
+        ? readServerValue(serverEnv, llmManager.env, config.baseUrlKey)
+        : undefined;
+      const apiTokenValue = config.apiTokenKey
+        ? readServerValue(serverEnv, llmManager.env, config.apiTokenKey)
+        : undefined;
 
-      if (providerInstance) {
-        const config = providerInstance.config;
+      const hasBaseUrl =
+        !config.baseUrlKey || isRealBaseUrl(baseUrlValue) || Boolean(config.baseUrl && config.apiTokenKey);
 
-        /*
-         * Check if required environment variables are set
-         * For providers with baseUrlKey (Ollama, LMStudio, OpenAILike)
-         */
-        if (config.baseUrlKey) {
-          const baseUrlEnvVar = config.baseUrlKey;
-          const cloudflareEnv = (context?.cloudflare?.env as Record<string, any>)?.[baseUrlEnvVar];
-          const processEnv = process.env[baseUrlEnvVar];
-          const managerEnv = llmManager.env[baseUrlEnvVar];
-
-          const envBaseUrl = cloudflareEnv || processEnv || managerEnv;
-
-          /*
-           * Only consider configured if environment variable is explicitly set
-           * Don't count default config.baseUrl values or placeholder values
-           */
-          const isValidEnvValue =
-            envBaseUrl &&
-            typeof envBaseUrl === 'string' &&
-            envBaseUrl.trim().length > 0 &&
-            !envBaseUrl.includes('your_') && // Filter out placeholder values like "your_openai_like_base_url_here"
-            !envBaseUrl.includes('_here') &&
-            envBaseUrl.startsWith('http'); // Must be a valid URL
-
-          if (isValidEnvValue) {
-            isConfigured = true;
-            configMethod = 'environment';
-          }
-        }
-
-        // For providers that might need API keys as well (check this separately, not as fallback)
-        if (config.apiTokenKey && !isConfigured) {
-          const apiTokenEnvVar = config.apiTokenKey;
-
-          const envApiToken =
-            (context?.cloudflare?.env as Record<string, any>)?.[apiTokenEnvVar] ||
-            process.env[apiTokenEnvVar] ||
-            llmManager.env[apiTokenEnvVar];
-
-          // Only consider configured if API key is set and not a placeholder
-          const isValidApiToken =
-            envApiToken &&
-            typeof envApiToken === 'string' &&
-            envApiToken.trim().length > 0 &&
-            !envApiToken.includes('your_') && // Filter out placeholder values
-            !envApiToken.includes('_here') &&
-            envApiToken.length > 10; // API keys are typically longer than 10 chars
-
-          if (isValidApiToken) {
-            isConfigured = true;
-            configMethod = 'environment';
-          }
-        }
-      }
+      const hasApiToken = !config.apiTokenKey || isRealSecret(apiTokenValue);
+      const isConfigured = hasBaseUrl && hasApiToken;
 
       configuredProviders.push({
-        name: providerName,
+        name: providerInstance.name,
         isConfigured,
-        configMethod,
+        configMethod: isConfigured ? 'environment' : 'none',
       });
     }
 
@@ -96,13 +69,8 @@ export const loader: LoaderFunction = async ({ context }) => {
   } catch (error) {
     console.error('Error detecting configured providers:', error);
 
-    // Return default state on error
     return Response.json({
-      providers: LOCAL_PROVIDERS.map((name) => ({
-        name,
-        isConfigured: false,
-        configMethod: 'none' as const,
-      })),
+      providers: [],
     });
   }
 };

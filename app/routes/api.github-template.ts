@@ -18,7 +18,7 @@ function decodeTextFile(bytes: Uint8Array): string | null {
 
 async function fetchGitHub(url: string, githubToken: string | undefined, headers: HeadersInit = {}) {
   const requestHeaders = new Headers(headers);
-  requestHeaders.set('User-Agent', 'bolt.diy-app');
+  requestHeaders.set('User-Agent', 'OasisOS');
 
   if (githubToken) {
     requestHeaders.set('Authorization', `Bearer ${githubToken}`);

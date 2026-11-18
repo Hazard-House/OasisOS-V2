@@ -223,7 +223,7 @@ export function FileIcon({ filename, size = 'md', className }: FileIconProps) {
     }
 
     if (['kt', 'kotlin'].includes(extension)) {
-      return 'text-purple-400';
+      return 'text-purple-400 dark:text-[#fcd10f]';
     }
 
     if (['dart'].includes(extension)) {

@@ -5,10 +5,9 @@ import { Chat } from '~/components/chat/Chat.client';
 import { Header } from '~/components/header/Header';
 import { FirstRunOnboarding } from '~/components/onboarding/FirstRunOnboarding';
 import BackgroundRays from '~/components/ui/BackgroundRays';
+import { oasisMeta } from '~/lib/oasisMeta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'Bolt' }, { name: 'description', content: 'Talk with Bolt, an AI assistant from StackBlitz' }];
-};
+export const meta: MetaFunction = (args) => oasisMeta('OasisOS', args);
 
 export const loader = () => Response.json({});
 
