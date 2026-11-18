@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import type { IconType } from 'react-icons';
 import { BiCodeBlock, BiChip } from 'react-icons/bi';
 import { BsRobot, BsCloud } from 'react-icons/bs';
@@ -66,33 +66,34 @@ function ProviderKeyField({ providerName }: { providerName: string }) {
   const [value, setValue] = useState('');
   const [envSet, setEnvSet] = useState(false);
   const [saved, setSaved] = useState(false);
+  const envRequest = useRef(0);
 
-  useEffect(() => {
-    const current = getApiKeysFromCookies()[providerName] || '';
-    setValue(current);
-    setSaved(Boolean(current));
-
-    let active = true;
+  const loadServerKeyStatus = useCallback(() => {
+    const requestId = envRequest.current + 1;
+    envRequest.current = requestId;
 
     fetch(`/api/check-env-key?provider=${encodeURIComponent(providerName)}`)
       .then((response) => response.json())
       .then((data: unknown) => {
         const isSet = typeof data === 'object' && data !== null && 'isSet' in data && Boolean(data.isSet);
 
-        if (active) {
+        if (envRequest.current === requestId) {
           setEnvSet(isSet);
         }
       })
       .catch(() => {
-        if (active) {
+        if (envRequest.current === requestId) {
           setEnvSet(false);
         }
       });
-
-    return () => {
-      active = false;
-    };
   }, [providerName]);
+
+  useEffect(() => {
+    const current = getApiKeysFromCookies()[providerName] || '';
+    setValue(current);
+    setSaved(Boolean(current));
+    loadServerKeyStatus();
+  }, [providerName, loadServerKeyStatus]);
 
   const save = () => {
     const apiKeys = { ...getApiKeysFromCookies() };
@@ -109,6 +110,7 @@ function ProviderKeyField({ providerName }: { providerName: string }) {
       new CustomEvent<ApiKeysUpdatedDetail>(API_KEYS_UPDATED_EVENT, { detail: { apiKeys, providerName } }),
     );
     setSaved(Boolean(next));
+    loadServerKeyStatus();
     toast.success(next ? `${providerName} key saved in this browser` : `${providerName} browser key removed`);
   };
 
